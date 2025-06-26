@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
 import 'forgot_password.dart';
 import 'login_screen.dart';
+import '../services/user_service.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  String userName = 'User';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  void _loadUserName() async {
+    final user = await UserService.getUser();
+    if (user != null && mounted) {
+      setState(() {
+        userName = user.fullName;
+      });
+    }
+  }
 
   void _showMenuModal(BuildContext context) {
     showGeneralDialog(
@@ -19,6 +42,7 @@ class DashboardScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
                   child: _SidebarMenu(
+                    userName: userName,
                     onLogout: () => _showLogoutSheet(context),
                     onResetPassword: () {
                       Navigator.of(context).pop();
@@ -51,12 +75,15 @@ class DashboardScreen extends StatelessWidget {
       builder: (context) {
         return _LogoutSheet(
           onNo: () => Navigator.of(context).pop(),
-          onYes: () {
-            Navigator.of(context).pop(); // close sheet
-            Navigator.of(context).pop(); // close sidebar
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
+          onYes: () async {
+            await UserService.logout();
+            if (mounted) {
+              Navigator.of(context).pop(); // close sheet
+              Navigator.of(context).pop(); // close sidebar
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            }
           },
         );
       },
@@ -126,10 +153,16 @@ class DashboardScreen extends StatelessWidget {
 }
 
 class _SidebarMenu extends StatelessWidget {
+  final String userName;
   final VoidCallback onLogout;
   final VoidCallback onResetPassword;
   final VoidCallback onProfile;
-  const _SidebarMenu({required this.onLogout, required this.onResetPassword, required this.onProfile});
+  const _SidebarMenu({
+    required this.userName,
+    required this.onLogout, 
+    required this.onResetPassword, 
+    required this.onProfile
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -149,17 +182,17 @@ class _SidebarMenu extends StatelessWidget {
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  'Hi, William',
-                  style: TextStyle(
+                  'Hi, $userName',
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                     color: Colors.black,
                   ),
                 ),
-                SizedBox(height: 2),
-                Text(
+                const SizedBox(height: 2),
+                const Text(
                   'Good Morning',
                   style: TextStyle(
                     color: Colors.black54,
@@ -170,7 +203,7 @@ class _SidebarMenu extends StatelessWidget {
             ),
             const Spacer(),
             IconButton(
-              icon: Icon(Icons.close, color: Colors.black, size: 28),
+              icon: const Icon(Icons.close, color: Colors.black, size: 28),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
@@ -387,20 +420,129 @@ class _DashboardCard extends StatelessWidget {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String fullName = '';
+  String email = '';
+  String phoneNumber = '';
+  String password = '';
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() async {
+    final user = await UserService.getUser();
+    if (user != null && mounted) {
+      setState(() {
+        fullName = user.fullName;
+        email = user.email;
+        phoneNumber = user.phoneNumber;
+        password = user.password;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text('Profile', style: TextStyle(color: Colors.black)),
+        title: const Text('Profile Page', style: TextStyle(color: Colors.black)),
       ),
-      body: const Center(
-        child: Text('Profile Page (Design to be provided)'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            const Text('Name', style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 4),
+            TextFormField(
+              enabled: false,
+              initialValue: fullName,
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFFF3F3F3),
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Designation', style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 4),
+            TextFormField(
+              enabled: false,
+              initialValue: 'Driver',
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFFF3F3F3),
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('City', style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 4),
+            TextFormField(
+              enabled: false,
+              initialValue: 'KHI',
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFFF3F3F3),
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Station', style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 4),
+            TextFormField(
+              enabled: false,
+              initialValue: 'Karachi',
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFFF3F3F3),
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Password', style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 4),
+            TextFormField(
+              enabled: false,
+              initialValue: password,
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFFF3F3F3),
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
