@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'forgot_password.dart';
 import 'login_screen.dart';
 import '../services/user_service.dart';
+import 'Pickup.dart';
+import 'arrival.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -131,16 +133,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _DashboardCard(
-                    icon: Icons.local_shipping,
-                    label: 'Pickup',
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const PickupScreen()),
+                      );
+                    },
+                    child: _DashboardCard(
+                      icon: Icons.local_shipping,
+                      label: 'Pickup',
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _DashboardCard(
-                    icon: Icons.inventory_2,
-                    label: 'Arrival',
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ArrivalScreen()),
+                      );
+                    },
+                    child: _DashboardCard(
+                      icon: Icons.inventory_2,
+                      label: 'Arrival',
+                    ),
                   ),
                 ),
               ],
