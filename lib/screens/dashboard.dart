@@ -4,6 +4,8 @@ import 'login_screen.dart';
 import '../services/user_service.dart';
 import 'Pickup.dart';
 import 'arrival.dart';
+import 'profile_screen.dart';
+import 'sidebar_menu.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -36,33 +38,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       barrierDismissible: true,
       barrierLabel: '',
       pageBuilder: (context, anim1, anim2) {
-        return SafeArea(
-          child: Scaffold(
-            backgroundColor: Colors.white,
-            body: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
-                  child: _SidebarMenu(
-                    userName: userName,
-                    onLogout: () => _showLogoutSheet(context),
-                    onResetPassword: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-                      );
-                    },
-                    onProfile: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
+        return SidebarMenu(
+          userName: userName,
+          onLogout: () => _showLogoutSheet(context),
+          onResetPassword: () {
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+            );
+          },
+          onProfile: () {
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            );
+          },
+          onClose: () => Navigator.of(context).pop(),
         );
       },
     );
@@ -80,10 +69,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onYes: () async {
             await UserService.logout();
             if (mounted) {
-              Navigator.of(context).pop(); // close sheet
-              Navigator.of(context).pop(); // close sidebar
-              Navigator.of(context).pushReplacement(
+              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
               );
             }
           },
@@ -164,94 +152,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _SidebarMenu extends StatelessWidget {
-  final String userName;
-  final VoidCallback onLogout;
-  final VoidCallback onResetPassword;
-  final VoidCallback onProfile;
-  const _SidebarMenu({
-    required this.userName,
-    required this.onLogout, 
-    required this.onResetPassword, 
-    required this.onProfile
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F3F3),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.all(12),
-              child: const Icon(Icons.person, color: Color(0xFF18136E), size: 32),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Hi, $userName',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Good Morning',
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.black, size: 28),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Divider(),
-        ListTile(
-          leading: const Icon(Icons.person, color: Color(0xFF18136E)),
-          title: const Text('Profile', style: TextStyle(color: Colors.black, fontSize: 16)),
-          onTap: onProfile,
-          contentPadding: EdgeInsets.zero,
-        ),
-        ListTile(
-          leading: const Icon(Icons.lock_outline, color: Color(0xFF18136E)),
-          title: const Text('Reset Password', style: TextStyle(color: Colors.black, fontSize: 16)),
-          onTap: onResetPassword,
-          contentPadding: EdgeInsets.zero,
-        ),
-        ListTile(
-          leading: const Icon(Icons.logout, color: Color(0xFF18136E)),
-          title: const Text('Logout', style: TextStyle(color: Colors.black, fontSize: 16)),
-          onTap: onLogout,
-          contentPadding: EdgeInsets.zero,
-        ),
-        const Spacer(),
-        const Center(
-          child: Text(
-            'App Version - V2.00',
-            style: TextStyle(color: Colors.black54, fontSize: 13),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -431,134 +331,6 @@ class _DashboardCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  String fullName = '';
-  String email = '';
-  String phoneNumber = '';
-  String password = '';
-  bool _obscurePassword = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  void _loadUserData() async {
-    final user = await UserService.getUser();
-    if (user != null && mounted) {
-      setState(() {
-        fullName = user.fullName;
-        email = user.email;
-        phoneNumber = user.phoneNumber;
-        password = user.password;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text('Profile Page', style: TextStyle(color: Colors.black)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            const Text('Name', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: fullName,
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Designation', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: 'Driver',
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('City', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: 'KHI',
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Station', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: 'Karachi',
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Password', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: password,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFFF3F3F3),
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                suffixIcon: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

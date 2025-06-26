@@ -1,7 +1,68 @@
 import 'package:flutter/material.dart';
+import 'sidebar_menu.dart';
+import '../services/user_service.dart';
+import 'dashboard.dart';
+import 'login_screen.dart';
+import 'forgot_password.dart';
+import 'profile_screen.dart';
 
-class ArrivalScreen extends StatelessWidget {
+class ArrivalScreen extends StatefulWidget {
   const ArrivalScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ArrivalScreen> createState() => _ArrivalScreenState();
+}
+
+class _ArrivalScreenState extends State<ArrivalScreen> {
+  String userName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  void _loadUserName() async {
+    final user = await UserService.getUser();
+    if (user != null && mounted) {
+      setState(() {
+        userName = user.fullName;
+      });
+    }
+  }
+
+  void _showSidebar() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '',
+      pageBuilder: (context, anim1, anim2) {
+        return SidebarMenu(
+          userName: userName,
+          onProfile: () {
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            );
+          },
+          onResetPassword: () {
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+            );
+          },
+          onLogout: () async {
+            await UserService.logout();
+            Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (route) => false,
+            );
+          },
+          onClose: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +78,7 @@ class ArrivalScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.menu, color: Colors.black),
-            onPressed: () {},
+            onPressed: _showSidebar,
           ),
         ],
       ),
