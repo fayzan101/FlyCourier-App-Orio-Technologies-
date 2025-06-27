@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/user_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -31,94 +33,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text('Profile Page', style: TextStyle(color: Colors.black)),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            const Text('Name', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: fullName,
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Designation', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: 'Driver',
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('City', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: 'KHI',
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Station', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: 'Karachi',
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFF3F3F3),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Password', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 4),
-            TextFormField(
-              enabled: false,
-              initialValue: password,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFFF3F3F3),
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                suffixIcon: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.black),
+          title: Text('Profile Page', style: GoogleFonts.poppins(color: Colors.black)),
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Text('Name', style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 4),
+                TextFormField(
+                  enabled: false,
+                  initialValue: fullName,
+                  style: GoogleFonts.poppins(),
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color(0xFFF3F3F3),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                Text('Designation', style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 4),
+                TextFormField(
+                  enabled: false,
+                  initialValue: 'Driver',
+                  style: GoogleFonts.poppins(),
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color(0xFFF3F3F3),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('City', style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 4),
+                TextFormField(
+                  enabled: false,
+                  initialValue: 'KHI',
+                  style: GoogleFonts.poppins(),
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color(0xFFF3F3F3),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Station', style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 4),
+                TextFormField(
+                  enabled: false,
+                  initialValue: 'Karachi',
+                  style: GoogleFonts.poppins(),
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color(0xFFF3F3F3),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Password', style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 4),
+                TextFormField(
+                  enabled: false,
+                  initialValue: password,
+                  style: GoogleFonts.poppins(),
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF3F3F3),
+                    border: const OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

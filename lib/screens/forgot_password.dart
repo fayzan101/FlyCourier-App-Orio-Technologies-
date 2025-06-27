@@ -378,7 +378,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       'Already have an account? ',
                       style: TextStyle(
                         color: Color(0xFF7B7B7B),
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                     InkWell(
@@ -393,7 +393,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           style: TextStyle(
                             color: Color(0xFF18136E),
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 12,
                             decoration: TextDecoration.underline,
                           ),
                         ),

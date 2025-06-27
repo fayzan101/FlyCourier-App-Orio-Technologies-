@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'forgot_password.dart';
 import 'login_screen.dart';
 import '../services/user_service.dart';
@@ -33,27 +35,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showMenuModal(BuildContext context) {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: '',
-      pageBuilder: (context, anim1, anim2) {
-        return SidebarMenu(
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SidebarScreen(
           userName: userName,
           onLogout: () => _showLogoutSheet(context),
           onResetPassword: () {
-            Navigator.of(context, rootNavigator: true).push(
+            Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
             );
           },
           onProfile: () {
-            Navigator.of(context, rootNavigator: true).push(
+            Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             );
           },
-          onClose: () => Navigator.of(context).pop(),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -82,74 +80,92 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: const _FlyCourierBranding(),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black, size: 28),
-            onPressed: () => _showMenuModal(context),
-          ),
-        ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Dashboard',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
-              ),
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: const _FlyCourierBranding(),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.menu, color: Colors.black, size: 28),
+              onPressed: () => _showMenuModal(context),
             ),
-            const SizedBox(height: 4),
-            const Text(
-              'Here is the list of operational process',
-              style: TextStyle(
-                color: Color(0xFF7B7B7B),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
+          ],
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const PickupScreen()),
-                      );
-                    },
-                    child: _DashboardCard(
-                      icon: Icons.local_shipping,
-                      label: 'Pickup',
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 8),
+                  child: Text(
+                    'Dashboard',
+                    style: GoogleFonts.poppins(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ArrivalScreen()),
-                      );
-                    },
-                    child: _DashboardCard(
-                      icon: Icons.inventory_2,
-                      label: 'Arrival',
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text(
+                    'Here is the list of operational process',
+                    style: GoogleFonts.poppins(
+                      color: Color(0xFF7B7B7B),
+                      fontSize: 14,
                     ),
                   ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const PickupScreen()),
+                          );
+                        },
+                        child: _DashboardCard(
+                          icon: Icons.local_shipping,
+                          label: 'Pickup',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const ArrivalScreen()),
+                          );
+                        },
+                        child: _DashboardCard(
+                          icon: Icons.inventory_2,
+                          label: 'Arrival',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

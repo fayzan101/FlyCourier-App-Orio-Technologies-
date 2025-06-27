@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'sidebar_menu.dart';
 import '../services/user_service.dart';
 import 'dashboard.dart';
@@ -32,182 +34,189 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
   }
 
   void _showSidebar() {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: '',
-      pageBuilder: (context, anim1, anim2) {
-        return SidebarMenu(
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SidebarScreen(
           userName: userName,
           onProfile: () {
-            Navigator.of(context, rootNavigator: true).push(
+            Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             );
           },
           onResetPassword: () {
-            Navigator.of(context, rootNavigator: true).push(
+            Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
             );
           },
           onLogout: () async {
             await UserService.logout();
-            Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const LoginScreen()),
               (route) => false,
             );
           },
-          onClose: () {
-            Navigator.of(context).pop();
-          },
-        );
-      },
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text('Arrival', style: TextStyle(color: Colors.black, fontSize: 18)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black),
-            onPressed: _showSidebar,
-          ),
-        ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          children: [
-            // Enter Shipment Number
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter Shipment Number',
-                      filled: true,
-                      fillColor: const Color(0xFFF3F3F3),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  height: 40,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD9D9D9),
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                    onPressed: () {},
-                    child: const Text('Add'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Scan by CN Dropdown
-            Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F3F3),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: DropdownButtonFormField<String>(
-                value: 'Scan by CN',
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Scan by CN',
-                    child: Text('Scan by CN'),
-                  ),
-                ],
-                onChanged: null,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                ),
-                icon: const Icon(Icons.arrow_drop_down),
-                disabledHint: const Text('Scan by CN'),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Click to Scan
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    enabled: false,
-                    decoration: InputDecoration(
-                      hintText: 'Click to Scan',
-                      filled: true,
-                      fillColor: const Color(0xFFF3F3F3),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD9D9D9),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Icon(Icons.qr_code_2, color: Colors.black),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Search
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      filled: true,
-                      fillColor: const Color(0xFFF3F3F3),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD9D9D9),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Icon(Icons.search, color: Colors.black),
-                ),
-              ],
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: Text('Arrival', style: GoogleFonts.poppins(color: Colors.black, fontSize: 18)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.menu, color: Colors.black),
+              onPressed: _showSidebar,
             ),
           ],
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Enter Shipment Number
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Enter Shipment Number',
+                          filled: true,
+                          fillColor: const Color(0xFFF3F3F3),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 40,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD9D9D9),
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        onPressed: () {},
+                        child: const Text('Add'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Scan by CN Dropdown
+                Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F3F3),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: 'Scan by CN',
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Scan by CN',
+                        child: Text('Scan by CN'),
+                      ),
+                    ],
+                    onChanged: null,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                    ),
+                    icon: const Icon(Icons.arrow_drop_down),
+                    disabledHint: const Text('Scan by CN'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Click to Scan
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        enabled: false,
+                        decoration: InputDecoration(
+                          hintText: 'Click to Scan',
+                          filled: true,
+                          fillColor: const Color(0xFFF3F3F3),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD9D9D9),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(Icons.qr_code_2, color: Colors.black),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Search
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search',
+                          filled: true,
+                          fillColor: const Color(0xFFF3F3F3),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD9D9D9),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(Icons.search, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

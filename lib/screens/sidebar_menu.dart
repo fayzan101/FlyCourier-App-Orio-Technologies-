@@ -1,105 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class SidebarMenu extends StatelessWidget {
+class SidebarScreen extends StatelessWidget {
   final String userName;
   final VoidCallback onProfile;
   final VoidCallback onResetPassword;
   final VoidCallback onLogout;
-  final VoidCallback onClose;
 
-  const SidebarMenu({
+  const SidebarScreen({
     Key? key,
     required this.userName,
     required this.onProfile,
     required this.onResetPassword,
     required this.onLogout,
-    required this.onClose,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     const darkBlue = Color(0xFF18136E);
-    return SafeArea(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
       child: Scaffold(
+        extendBody: true,
         backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F3F3),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: const Icon(Icons.person, color: darkBlue, size: 32),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hi, $userName',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: darkBlue,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Good Morning',
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.black, size: 28),
-                        onPressed: onClose,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  ListTile(
-                    leading: const Icon(Icons.person, color: darkBlue),
-                    title: const Text('Profile', style: TextStyle(color: darkBlue, fontSize: 16)),
-                    onTap: onProfile,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.lock_outline, color: darkBlue),
-                    title: const Text('Reset Password', style: TextStyle(color: darkBlue, fontSize: 16)),
-                    onTap: onResetPassword,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: darkBlue),
-                    title: const Text('Logout', style: TextStyle(color: darkBlue, fontSize: 16)),
-                    onTap: onLogout,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  const Spacer(),
-                  const Center(
-                    child: Text(
-                      'App Version - V2.00',
-                      style: TextStyle(color: Colors.black54, fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: const SizedBox.shrink(),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.black, size: 28),
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F3F3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: const Icon(Icons.person, color: darkBlue, size: 32),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hi, $userName',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: darkBlue,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Good Morning',
+                          style: GoogleFonts.poppins(
+                            color: Colors.black54,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.person, color: darkBlue),
+                  title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                  onTap: onProfile,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.lock_outline, color: darkBlue),
+                  title: Text('Reset Password', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                  onTap: onResetPassword,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: darkBlue),
+                  title: Text('Logout', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                  onTap: onLogout,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                const Spacer(),
+                Center(
+                  child: Text(
+                    'App Version - V2.00',
+                    style: GoogleFonts.poppins(color: Colors.black54, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
