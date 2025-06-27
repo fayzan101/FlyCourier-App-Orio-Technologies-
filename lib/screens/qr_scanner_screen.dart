@@ -1,0 +1,174 @@
+import 'package:flutter/material.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
+
+class QrScannerScreen extends StatefulWidget {
+  final Set<String> validIds;
+  final void Function(String id) onScanSuccess;
+
+  const QrScannerScreen({Key? key, required this.validIds, required this.onScanSuccess}) : super(key: key);
+
+  @override
+  State<QrScannerScreen> createState() => _QrScannerScreenState();
+}
+
+class _QrScannerScreenState extends State<QrScannerScreen> {
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+  String? scannedId;
+  bool showSuccess = false;
+  bool showError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (controller != null) {
+      controller!.pauseCamera();
+      controller!.resumeCamera();
+    }
+  }
+
+  void _onQRViewCreated(QRViewController ctrl) {
+    controller = ctrl;
+    ctrl.scannedDataStream.listen((scanData) {
+      if (scannedId != scanData.code) {
+        setState(() {
+          scannedId = scanData.code;
+        });
+        if (widget.validIds.contains(scanData.code)) {
+          setState(() {
+            showSuccess = true;
+            showError = false;
+          });
+          widget.onScanSuccess(scanData.code!);
+        } else {
+          setState(() {
+            showError = true;
+            showSuccess = false;
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(28);
+    return Scaffold(
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text('Scan Barcode', style: GoogleFonts.poppins(color: Colors.white)),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          QRView(
+            key: qrKey,
+            onQRViewCreated: _onQRViewCreated,
+            overlay: QrScannerOverlayShape(
+              borderColor: Colors.white,
+              borderRadius: 12,
+              borderLength: 32,
+              borderWidth: 8,
+              cutOutSize: MediaQuery.of(context).size.width * 0.7,
+            ),
+          ),
+          if (showSuccess)
+            Positioned(
+              top: 56,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text('Added Successfully', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          if (showError)
+            Positioned(
+              top: 56,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text('Invalid QR code', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 24, top: 12),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.cameraswitch, color: Colors.white, size: 32),
+                    onPressed: () => controller?.flipCamera(),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.flash_on, color: Colors.white, size: 32),
+                    onPressed: () => controller?.toggleFlash(),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(scannedId),
+                    child: const Text('Save'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+} 

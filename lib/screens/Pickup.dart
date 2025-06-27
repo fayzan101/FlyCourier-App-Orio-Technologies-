@@ -7,6 +7,7 @@ import 'dashboard.dart';
 import 'login_screen.dart';
 import 'forgot_password.dart';
 import 'profile_screen.dart';
+import 'qr_scanner_screen.dart';
 
 class PickupItem {
   final String id;
@@ -236,6 +237,23 @@ class _PickupScreenState extends State<PickupScreen> {
     );
   }
 
+  void _openQrScanner() async {
+    final validIds = _pickupList.map((e) => e.id).toSet();
+    final scannedId = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => QrScannerScreen(
+          validIds: validIds,
+          onScanSuccess: (id) {},
+        ),
+      ),
+    );
+    if (scannedId != null && scannedId.isNotEmpty && !_pickupList.any((item) => item.id == scannedId)) {
+      setState(() {
+        _pickupList.add(PickupItem(id: scannedId));
+      });
+    }
+  }
+
   List<PickupItem> get _filteredPickupList {
     if (_searchQuery.isEmpty) return _pickupList;
     return _pickupList
@@ -341,7 +359,11 @@ class _PickupScreenState extends State<PickupScreen> {
                         color: const Color(0xFFD9D9D9),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(Icons.qr_code_2, color: Colors.black),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(6),
+                        onTap: _openQrScanner,
+                        child: const Icon(Icons.qr_code_2, color: Colors.black),
+                      ),
                     ),
                   ],
                 ),

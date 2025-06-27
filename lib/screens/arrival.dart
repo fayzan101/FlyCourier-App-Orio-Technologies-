@@ -7,6 +7,7 @@ import 'dashboard.dart';
 import 'login_screen.dart';
 import 'forgot_password.dart';
 import 'profile_screen.dart';
+import 'qr_scanner_screen.dart';
 
 class ShipmentItem {
   final String id;
@@ -236,6 +237,23 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
     );
   }
 
+  void _openQrScanner() async {
+    final validIds = _shipmentList.map((e) => e.id).toSet();
+    final scannedId = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => QrScannerScreen(
+          validIds: validIds,
+          onScanSuccess: (id) {},
+        ),
+      ),
+    );
+    if (scannedId != null && scannedId.isNotEmpty && !_shipmentList.any((item) => item.id == scannedId)) {
+      setState(() {
+        _shipmentList.add(ShipmentItem(id: scannedId));
+      });
+    }
+  }
+
   List<ShipmentItem> get _filteredShipmentList {
     if (_searchQuery.isEmpty) return _shipmentList;
     return _shipmentList
@@ -366,7 +384,11 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                         color: const Color(0xFFD9D9D9),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(Icons.qr_code_2, color: Colors.black),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(6),
+                        onTap: _openQrScanner,
+                        child: const Icon(Icons.qr_code_2, color: Colors.black),
+                      ),
                     ),
                   ],
                 ),
