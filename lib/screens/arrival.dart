@@ -111,7 +111,7 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 56),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

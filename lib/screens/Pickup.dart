@@ -111,7 +111,7 @@ class _PickupScreenState extends State<PickupScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 56),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -447,23 +447,24 @@ class _PickupScreenState extends State<PickupScreen> {
                           ],
                         ),
                       ),
-                  SafeArea(
-                    top: false,
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF18136E),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                  if (_filteredPickupList.isNotEmpty)
+                    SafeArea(
+                      top: false,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF18136E),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          onPressed: _showSuccessDialog,
+                          child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                         ),
-                        onPressed: _showSuccessDialog,
-                        child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ),
-                  ),
                 ],
               ],
             ),
