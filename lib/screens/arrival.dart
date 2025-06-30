@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'sidebar_menu.dart';
 import '../services/user_service.dart';
+import '../services/parcel_service.dart';
+import '../models/parcel_model.dart';
 import 'dashboard.dart';
 import 'login_screen.dart';
 import 'forgot_password.dart';
@@ -10,9 +12,10 @@ import 'profile_screen.dart';
 import 'qr_scanner_screen.dart';
 
 class ShipmentItem {
-  final String id;
+  final ParcelModel parcel;
   bool selected;
-  ShipmentItem({required this.id, this.selected = false});
+  bool isExpanded;
+  ShipmentItem({required this.parcel, this.selected = false, this.isExpanded = false});
 }
 
 class ArrivalScreen extends StatefulWidget {
@@ -72,14 +75,57 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
     );
   }
 
-  void _addShipment() {
-    final id = _shipmentController.text.trim();
-    if (id.isNotEmpty && !_shipmentList.any((item) => item.id == id)) {
-      setState(() {
-        _shipmentList.add(ShipmentItem(id: id));
-        _shipmentController.clear();
-      });
-      FocusScope.of(context).unfocus();
+  void _addShipment() async {
+    final trackingNumber = _shipmentController.text.trim();
+    if (trackingNumber.isNotEmpty && !_shipmentList.any((item) => item.parcel.trackingNumber == trackingNumber)) {
+      try {
+        // Fetch parcel details from API
+        final parcel = await ParcelService.getParcelByTrackingNumber(trackingNumber);
+        
+        if (parcel != null) {
+          setState(() {
+            _shipmentList.add(ShipmentItem(parcel: parcel));
+            _shipmentController.clear();
+          });
+          FocusScope.of(context).unfocus();
+          
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Shipment added successfully: ${parcel.recipientName}'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Shipment not found. Please check the tracking number.'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } catch (e) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding shipment: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } else if (_shipmentList.any((item) => item.parcel.trackingNumber == trackingNumber)) {
+      // Show error if shipment already exists
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This shipment is already in the list.'),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -238,26 +284,27 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
   }
 
   void _openQrScanner() async {
-    final validIds = _shipmentList.map((e) => e.id).toSet();
-    final scannedId = await Navigator.of(context).push<String>(
+    final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => QrScannerScreen(
-          validIds: validIds,
-          onScanSuccess: (id) {},
+          validIds: {},
+          onScanSuccess: (trackingNumber) {
+            setState(() {
+              _shipmentController.text = trackingNumber;
+            });
+          },
         ),
       ),
     );
-    if (scannedId != null && scannedId.isNotEmpty && !_shipmentList.any((item) => item.id == scannedId)) {
-      setState(() {
-        _shipmentList.add(ShipmentItem(id: scannedId));
-      });
-    }
   }
 
   List<ShipmentItem> get _filteredShipmentList {
     if (_searchQuery.isEmpty) return _shipmentList;
     return _shipmentList
-        .where((item) => item.id.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where((item) => 
+          item.parcel.trackingNumber.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          item.parcel.recipientName.toLowerCase().contains(_searchQuery.toLowerCase())
+        )
         .toList();
   }
 
@@ -266,7 +313,7 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
     final hasSelected = _shipmentList.any((item) => item.selected);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        statusBarColor: Colors.white,
         statusBarIconBrightness: Brightness.dark,
         systemNavigationBarColor: Colors.transparent,
         systemNavigationBarIconBrightness: Brightness.dark,
@@ -406,7 +453,7 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                           });
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search',
+                          hintText: 'Search by tracking number or recipient name',
                           filled: true,
                           fillColor: const Color(0xFFF3F3F3),
                           border: OutlineInputBorder(
@@ -475,17 +522,102 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                                   return Card(
                                     color: item.selected ? Colors.grey[100] : Colors.white,
                                     margin: const EdgeInsets.symmetric(vertical: 4),
-                                    child: CheckboxListTile(
-                                      value: item.selected,
-                                      onChanged: (val) {
-                                        setState(() {
-                                          item.selected = val ?? false;
-                                          _selectAll = _shipmentList.isNotEmpty && _shipmentList.every((e) => e.selected);
-                                        });
-                                      },
-                                      title: Text('Shipment ID: ${item.id}', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                                      controlAffinity: ListTileControlAffinity.leading,
-                                      secondary: const Icon(Icons.keyboard_arrow_down),
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          leading: Checkbox(
+                                            value: item.selected,
+                                            onChanged: (val) {
+                                              setState(() {
+                                                item.selected = val ?? false;
+                                                _selectAll = _shipmentList.isNotEmpty && _shipmentList.every((e) => e.selected);
+                                              });
+                                            },
+                                          ),
+                                          title: Text(
+                                            item.parcel.trackingNumber,
+                                            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                                          ),
+                                          subtitle: Text(
+                                            item.parcel.recipientName,
+                                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.black54),
+                                          ),
+                                          trailing: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: _getStatusColor(item.parcel.status),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  item.parcel.status,
+                                                  style: GoogleFonts.poppins(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              IconButton(
+                                                icon: Icon(
+                                                  item.isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                                  color: const Color(0xFF18136E),
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    item.isExpanded = !item.isExpanded;
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (item.isExpanded)
+                                          Container(
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[50],
+                                              borderRadius: const BorderRadius.only(
+                                                bottomLeft: Radius.circular(4),
+                                                bottomRight: Radius.circular(4),
+                                              ),
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                _buildDetailRow('Recipient', item.parcel.recipientName),
+                                                _buildDetailRow('Phone', item.parcel.recipientPhone),
+                                                _buildDetailRow('Address', item.parcel.recipientAddress),
+                                                const Divider(),
+                                                _buildDetailRow('Sender', item.parcel.senderName),
+                                                _buildDetailRow('Sender Phone', item.parcel.senderPhone),
+                                                _buildDetailRow('Sender Address', item.parcel.senderAddress),
+                                                const Divider(),
+                                                Row(
+                                                  children: [
+                                                    Expanded(child: _buildDetailRow('Weight', item.parcel.weight)),
+                                                    Expanded(child: _buildDetailRow('Dimensions', item.parcel.dimensions)),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Expanded(child: _buildDetailRow('Package Type', item.parcel.packageType)),
+                                                    Expanded(child: _buildDetailRow('Insurance', item.parcel.insuranceValue)),
+                                                  ],
+                                                ),
+                                                _buildDetailRow('Current Location', item.parcel.currentLocation),
+                                                _buildDetailRow('Estimated Delivery', item.parcel.estimatedDelivery),
+                                                if (item.parcel.notes.isNotEmpty) ...[
+                                                  const Divider(),
+                                                  _buildDetailRow('Notes', item.parcel.notes),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   );
                                 },
@@ -519,5 +651,55 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              '$label:',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.black54,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'delivered':
+        return const Color(0xFF4CAF50);
+      case 'out for delivery':
+        return const Color(0xFFFF9800);
+      case 'in transit':
+        return const Color(0xFF2196F3);
+      case 'pending pickup':
+        return const Color(0xFF9C27B0);
+      case 'processed':
+        return const Color(0xFF607D8B);
+      case 'received':
+        return const Color(0xFF795548);
+      default:
+        return const Color(0xFF757575);
+    }
   }
 }

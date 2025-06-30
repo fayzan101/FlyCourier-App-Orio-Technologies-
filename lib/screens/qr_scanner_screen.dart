@@ -3,6 +3,8 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../services/user_service.dart';
+import '../services/parcel_service.dart';
+import '../models/parcel_model.dart';
 import 'sidebar_menu.dart';
 
 class QrScannerScreen extends StatefulWidget {
@@ -22,6 +24,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   bool showSuccess = false;
   bool showError = false;
   String userName = '';
+  ParcelModel? scannedParcel;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -80,22 +84,41 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   void _onQRViewCreated(QRViewController ctrl) {
     controller = ctrl;
-    ctrl.scannedDataStream.listen((scanData) {
-      if (scannedId != scanData.code) {
+    ctrl.scannedDataStream.listen((scanData) async {
+      if (scannedId != scanData.code && !isLoading) {
         setState(() {
           scannedId = scanData.code;
+          isLoading = true;
         });
-        if (widget.validIds.contains(scanData.code)) {
-          setState(() {
-            showSuccess = true;
-            showError = false;
-          });
-          widget.onScanSuccess(scanData.code!);
-        } else {
-          setState(() {
-            showError = true;
-            showSuccess = false;
-          });
+        
+        if (scanData.code != null) {
+          try {
+            final parcel = await ParcelService.getParcelByTrackingNumber(scanData.code!);
+            
+            if (parcel != null) {
+              setState(() {
+                scannedParcel = parcel;
+                showSuccess = true;
+                showError = false;
+                isLoading = false;
+              });
+              widget.onScanSuccess(scanData.code!);
+            } else {
+              setState(() {
+                showError = true;
+                showSuccess = false;
+                scannedParcel = null;
+                isLoading = false;
+              });
+            }
+          } catch (e) {
+            setState(() {
+              showError = true;
+              showSuccess = false;
+              scannedParcel = null;
+              isLoading = false;
+            });
+          }
         }
       }
     });
@@ -113,123 +136,171 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         extendBodyBehindAppBar: false,
-        appBar: AppBar(
+      appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
+        elevation: 0,
+        leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
           title: Text('Scan Barcode', style: GoogleFonts.poppins(color: Colors.black)),
-          centerTitle: false,
-          actions: [
-            IconButton(
+        centerTitle: false,
+        actions: [
+          IconButton(
               icon: const Icon(Icons.menu, color: Colors.black),
               onPressed: _showSidebar,
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
             SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
           },
           child: Stack(
-            children: [
-              QRView(
-                key: qrKey,
-                onQRViewCreated: _onQRViewCreated,
+        children: [
+          QRView(
+            key: qrKey,
+            onQRViewCreated: _onQRViewCreated,
+          ),
+          // Custom dimmed overlay
+          IgnorePointer(
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _ScannerOverlayPainter(
+                cutOutSize: MediaQuery.of(context).size.width * 0.7,
+                borderRadius: 12,
               ),
-              // Custom dimmed overlay
-              IgnorePointer(
-                child: CustomPaint(
-                  size: Size.infinite,
-                  painter: _ScannerOverlayPainter(
-                    cutOutSize: MediaQuery.of(context).size.width * 0.7,
-                    borderRadius: 12,
-                  ),
-                ),
-              ),
-              if (showSuccess)
-                Positioned(
-                  top: 56,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Text('Added Successfully', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                ),
-              if (showError)
-                Positioned(
-                  top: 56,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Text('Invalid QR code', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
+            ),
+          ),
+          if (showSuccess)
+            Positioned(
+              top: 56,
+              left: 0,
+              right: 0,
+              child: Center(
                 child: Container(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewPadding.bottom + 36,
-                    top: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Parcel Found!',
+                        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      if (scannedParcel != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${scannedParcel!.recipientName} - ${scannedParcel!.status}',
+                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 12),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (showError)
+            Positioned(
+              top: 56,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text('Invalid tracking number', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          if (isLoading)
+            Positioned(
+              top: 56,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.cameraswitch, color: Colors.white, size: 32),
-                        onPressed: () {
-                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-                          controller?.flipCamera();
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.flash_on, color: Colors.white, size: 32),
-                        onPressed: () {
-                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-                          controller?.toggleFlash();
-                        },
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          elevation: 0,
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
-                        onPressed: () {
-                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-                          Navigator.of(context).pop(scannedId);
-                        },
-                        child: const Text('Save'),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Searching parcel...',
+                        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ),
               ),
-            ],
+            ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewPadding.bottom + 36,
+                    top: 12,
+                  ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.cameraswitch, color: Colors.white, size: 32),
+                        onPressed: () {
+                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+                          controller?.flipCamera();
+                        },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.flash_on, color: Colors.white, size: 32),
+                        onPressed: () {
+                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+                          controller?.toggleFlash();
+                        },
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                        onPressed: () {
+                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+                          Navigator.of(context).pop(scannedId);
+                        },
+                    child: const Text('Save'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
           ),
         ),
       ),
