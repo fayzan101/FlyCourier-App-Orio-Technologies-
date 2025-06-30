@@ -184,7 +184,7 @@ class _LogoutSheet extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+      padding: EdgeInsets.fromLTRB(24, 32, 24, 32 + MediaQuery.of(context).viewPadding.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
