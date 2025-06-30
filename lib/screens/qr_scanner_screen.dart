@@ -129,90 +129,108 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             ),
           ],
         ),
-        body: Stack(
-          children: [
-            QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-            ),
-            // Custom dimmed overlay
-            IgnorePointer(
-              child: CustomPaint(
-                size: Size.infinite,
-                painter: _ScannerOverlayPainter(
-                  cutOutSize: MediaQuery.of(context).size.width * 0.7,
-                  borderRadius: 12,
-                ),
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+          },
+          child: Stack(
+            children: [
+              QRView(
+                key: qrKey,
+                onQRViewCreated: _onQRViewCreated,
               ),
-            ),
-            if (showSuccess)
-              Positioned(
-                top: 56,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Text('Added Successfully', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+              // Custom dimmed overlay
+              IgnorePointer(
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: _ScannerOverlayPainter(
+                    cutOutSize: MediaQuery.of(context).size.width * 0.7,
+                    borderRadius: 12,
                   ),
                 ),
               ),
-            if (showError)
-              Positioned(
-                top: 56,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Text('Invalid QR code', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.only(bottom: 24, top: 12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.cameraswitch, color: Colors.white, size: 32),
-                      onPressed: () => controller?.flipCamera(),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.flash_on, color: Colors.white, size: 32),
-                      onPressed: () => controller?.toggleFlash(),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        elevation: 0,
+              if (showSuccess)
+                Positioned(
+                  top: 56,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      onPressed: () => Navigator.of(context).pop(scannedId),
-                      child: const Text('Save'),
+                      child: Text('Added Successfully', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                     ),
-                  ],
+                  ),
+                ),
+              if (showError)
+                Positioned(
+                  top: 56,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Text('Invalid QR code', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewPadding.bottom + 36,
+                    top: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.cameraswitch, color: Colors.white, size: 32),
+                        onPressed: () {
+                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+                          controller?.flipCamera();
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.flash_on, color: Colors.white, size: 32),
+                        onPressed: () {
+                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+                          controller?.toggleFlash();
+                        },
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+                          Navigator.of(context).pop(scannedId);
+                        },
+                        child: const Text('Save'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
