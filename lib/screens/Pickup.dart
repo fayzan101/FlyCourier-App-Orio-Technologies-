@@ -565,36 +565,30 @@ class _PickupScreenState extends State<PickupScreen> {
                                                 bottomRight: Radius.circular(4),
                                               ),
                                             ),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                _buildDetailRow('Recipient', item.parcel.recipientName),
-                                                _buildDetailRow('Phone', item.parcel.recipientPhone),
-                                                _buildDetailRow('Address', item.parcel.recipientAddress),
-                                                const Divider(),
-                                                _buildDetailRow('Sender', item.parcel.senderName),
-                                                _buildDetailRow('Sender Phone', item.parcel.senderPhone),
-                                                _buildDetailRow('Sender Address', item.parcel.senderAddress),
-                                                const Divider(),
-                                                Row(
-                                                  children: [
-                                                    Expanded(child: _buildDetailRow('Weight', item.parcel.weight)),
-                                                    Expanded(child: _buildDetailRow('Dimensions', item.parcel.dimensions)),
+                                            child: SingleChildScrollView(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  _buildDetailRow('Recipient', item.parcel.recipientName),
+                                                  _buildDetailRow('Phone', item.parcel.recipientPhone),
+                                                  _buildDetailRow('Address', item.parcel.recipientAddress),
+                                                  const Divider(height: 16),
+                                                  _buildDetailRow('Sender', item.parcel.senderName),
+                                                  _buildDetailRow('Sender Phone', item.parcel.senderPhone),
+                                                  _buildDetailRow('Sender Address', item.parcel.senderAddress),
+                                                  const Divider(height: 16),
+                                                  _buildDetailRow('Weight', item.parcel.weight),
+                                                  _buildDetailRow('Dimensions', item.parcel.dimensions),
+                                                  _buildDetailRow('Package Type', item.parcel.packageType),
+                                                  _buildDetailRow('Insurance', item.parcel.insuranceValue),
+                                                  _buildDetailRow('Current Location', item.parcel.currentLocation),
+                                                  _buildDetailRow('Estimated Delivery', item.parcel.estimatedDelivery),
+                                                  if (item.parcel.notes.isNotEmpty) ...[
+                                                    const Divider(height: 16),
+                                                    _buildDetailRow('Notes', item.parcel.notes),
                                                   ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Expanded(child: _buildDetailRow('Package Type', item.parcel.packageType)),
-                                                    Expanded(child: _buildDetailRow('Insurance', item.parcel.insuranceValue)),
-                                                  ],
-                                                ),
-                                                _buildDetailRow('Current Location', item.parcel.currentLocation),
-                                                _buildDetailRow('Estimated Delivery', item.parcel.estimatedDelivery),
-                                                if (item.parcel.notes.isNotEmpty) ...[
-                                                  const Divider(),
-                                                  _buildDetailRow('Notes', item.parcel.notes),
                                                 ],
-                                              ],
+                                              ),
                                             ),
                                           ),
                                       ],
@@ -635,17 +629,17 @@ class _PickupScreenState extends State<PickupScreen> {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 120,
             child: Text(
               '$label:',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                fontSize: 12,
+                fontSize: 13,
                 color: Colors.black87,
               ),
             ),
@@ -654,9 +648,10 @@ class _PickupScreenState extends State<PickupScreen> {
             child: Text(
               value,
               style: GoogleFonts.poppins(
-                fontSize: 12,
+                fontSize: 13,
                 color: Colors.black54,
               ),
+              textAlign: TextAlign.left,
             ),
           ),
         ],
