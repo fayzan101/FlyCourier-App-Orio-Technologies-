@@ -60,7 +60,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         await UserService.saveUser(user);
         
         if (mounted) {
-          Get.offAll(() => const DashboardScreen());
+          Get.offAll(() => DashboardScreen());
         }
       } catch (e) {
         if (mounted) {

@@ -14,126 +14,30 @@ import 'package:get/get.dart';
 import '../Utils/Colors/color_resources.dart';
 import '../Utils/custom_snackbar.dart';
 import 'dart:async';
+import '../controllers/dashboard_card_controller.dart';
 
-class ArrivalController extends GetxController {
-  var showArrivalBox = false.obs;
-  Timer? _pollingTimer;
-
-  @override
-  void onInit() {
-    super.onInit();
-    fetchArrivalFlag();
-    _startPolling();
-  }
-
-  void _startPolling() {
-    _pollingTimer = Timer.periodic(Duration(seconds: 5), (timer) {
-      fetchArrivalFlag();
-    });
-  }
-
-  @override
-  void onClose() {
-    _pollingTimer?.cancel();
-    super.onClose();
-  }
-
-  Future<void> fetchArrivalFlag() async {
-    final userInfo = await UserService.getUserInfo();
-    int arrival = int.tryParse(userInfo['arrival']?.toString() ?? '0') ?? 0;
-    showArrivalBox.value = arrival == 1;
-  }
-}
-
-class DashboardCardController extends GetxController {
-  var showLoadsheet = false.obs;
-  var showManifest = false.obs;
-  var showDeManifest = false.obs;
-  var showCreateSheet = false.obs;
-  var showDelivery = false.obs;
-  var showTracking = false.obs;
-  var showReport = false.obs;
-  var showPickup = false.obs;
-  var showArrival = false.obs;
-
-  Timer? _pollingTimer;
-
-  @override
-  void onInit() {
-    super.onInit();
-    fetchFlags();
-    _startPolling();
-  }
-
-  void _startPolling() {
-    _pollingTimer = Timer.periodic(Duration(seconds: 5), (timer) {
-      fetchFlags();
-    });
-  }
-
-  @override
-  void onClose() {
-    _pollingTimer?.cancel();
-    super.onClose();
-  }
-
-  Future<void> fetchFlags() async {
-    final prefs = await SharedPreferences.getInstance();
-    showLoadsheet.value = (prefs.getInt('loadsheet') ?? 0) == 1;
-    showManifest.value = (prefs.getInt('manifest') ?? 0) == 0;
-    showReport.value = (prefs.getInt('report') ?? 0) == 0;
-    showDeManifest.value = (prefs.getInt('de_manifest') ?? 0) == 0;
-    showCreateSheet.value = (prefs.getInt('create_sheet') ?? 0) == 0;
-    showDelivery.value = (prefs.getInt('delivery') ?? 0) == 0;
-    showTracking.value = (prefs.getInt('tracking') ?? 0) == 1;
-    int arrival = int.tryParse(prefs.getString('arrival') ?? '0') ?? 0;
-    showPickup.value = arrival == 0;
-    showArrival.value = arrival == 0;
-  }
-}
-
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   final bool showLoginSuccess;
-  const DashboardScreen({Key? key, this.showLoginSuccess = false}) : super(key: key);
+  DashboardScreen({Key? key, this.showLoginSuccess = false}) : super(key: key);
 
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  String userName = 'User';
   final DashboardCardController cardController = Get.put(DashboardCardController());
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserName();
-    if (widget.showLoginSuccess) {
-      Future.delayed(Duration(milliseconds: 300), () {
-        customSnackBar('Success', 'Login successful!');
-      });
-    }
-  }
+  final RxString userName = 'User'.obs;
 
   void _loadUserName() async {
     final userInfo = await UserService.getUserInfo();
-    if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty && mounted) {
-      setState(() {
-        userName = userInfo['emp_name']!;
-      });
+    if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty) {
+      userName.value = userInfo['emp_name']!;
     } else {
       final user = await UserService.getUser();
-      if (user != null && mounted) {
-        setState(() {
-          userName = user.fullName;
-        });
+      if (user != null) {
+        userName.value = user.fullName;
       }
     }
   }
 
   void _showMenuModal(BuildContext context) {
     Get.to(() => SidebarScreen(
-      userName: userName,
+      userName: userName.value,
       onLogout: () => _showLogoutSheet(context),
       onResetPassword: () {
         Get.to(() => const ForgotPasswordScreen());
@@ -156,9 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onYes: () async {
             await UserService.logout();
             Get.delete<DashboardCardController>();
-            if (mounted) {
-              Get.offAll(() => const LoginScreen());
-            }
+            Get.offAll(() => const LoginScreen());
           },
         );
       },
@@ -167,6 +69,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Load user name once when the widget is built
+    _loadUserName();
+    if (showLoginSuccess) {
+      Future.delayed(Duration(milliseconds: 300), () {
+        customSnackBar('Success', 'Login successful!');
+      });
+    }
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,

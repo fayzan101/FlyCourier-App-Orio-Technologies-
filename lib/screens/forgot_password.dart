@@ -122,7 +122,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                     onPressed: () {
                       _showSuccessSnackbar(context);
                       Future.delayed(const Duration(seconds: 1), () {
-                        Get.offAll(() => const ResetPasswordScreen());
+                        Get.offAll(() => DashboardScreen());
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -221,7 +221,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               height: 44,
               child: ElevatedButton(
                 onPressed: () {
-                  Get.offAll(() => const DashboardScreen());
+                  Get.offAll(() => DashboardScreen());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF18136E),

@@ -55,7 +55,7 @@ class _SplashToLoginState extends State<SplashToLogin> {
     if (mounted) {
       final isLoggedIn = await UserService.isLoggedIn();
       if (isLoggedIn) {
-        Get.offAll(() => const DashboardScreen());
+        Get.offAll(() => DashboardScreen());
       } else {
         Get.offAll(() => const LoginScreen());
       }
