@@ -69,17 +69,10 @@ class _LoginScreenState extends State<LoginScreen> {
               _loginError = false;
               _isLoading = false;
             });
-            // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('✅ Login successful!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            // Wait a moment so the user sees the message
+            // Do NOT show a SnackBar here for successful login!
             await Future.delayed(const Duration(milliseconds: 800));
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const DashboardScreen()),
+              MaterialPageRoute(builder: (_) => DashboardScreen(showLoginSuccess: true)),
             );
           }
         } else {

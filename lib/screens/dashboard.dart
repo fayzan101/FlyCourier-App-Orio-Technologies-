@@ -10,7 +10,8 @@ import 'profile_screen.dart';
 import 'sidebar_menu.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  final bool showLoginSuccess;
+  const DashboardScreen({Key? key, this.showLoginSuccess = false}) : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -23,6 +24,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadUserName();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.showLoginSuccess) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.green,
+            elevation: 6,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            content: Stack(
+              children: [
+                SizedBox(
+                  height: 60,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '✅ Login successful!',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: GestureDetector(
+                    onTap: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                    child: const Icon(Icons.close, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      });
+    }
   }
 
   void _loadUserName() async {
