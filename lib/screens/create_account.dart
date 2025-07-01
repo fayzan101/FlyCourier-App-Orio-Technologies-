@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'dashboard.dart';
 import '../models/user_model.dart';
 import '../services/user_service.dart';
@@ -59,9 +60,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         await UserService.saveUser(user);
         
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
-          );
+          Get.offAll(() => const DashboardScreen());
         }
       } catch (e) {
         if (mounted) {

@@ -5,6 +5,7 @@ import 'create_account.dart';
 import 'dashboard.dart';
 import '../services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -71,9 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
             });
             // Do NOT show a SnackBar here for successful login!
             await Future.delayed(const Duration(milliseconds: 800));
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => DashboardScreen(showLoginSuccess: true)),
-            );
+            Get.offAll(() => DashboardScreen(showLoginSuccess: true));
           }
         } else {
           if (mounted) {
@@ -247,10 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-                          );
+                          Get.to(() => const ForgotPasswordScreen());
                         },
                         style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
                         child: const Text(

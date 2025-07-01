@@ -10,6 +10,7 @@ import 'login_screen.dart';
 import 'forgot_password.dart';
 import 'profile_screen.dart';
 import 'qr_scanner_screen.dart';
+import 'package:get/get.dart';
 
 class PickupItem {
   final ParcelModel parcel;
@@ -49,30 +50,19 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void _showSidebar() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SidebarScreen(
-          userName: userName,
-          onProfile: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            );
-          },
-          onResetPassword: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-            );
-          },
-          onLogout: () async {
-            await UserService.logout();
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (route) => false,
-            );
-          },
-        ),
-      ),
-    );
+    Get.to(() => SidebarScreen(
+      userName: userName,
+      onProfile: () {
+        Get.to(() => const ProfileScreen());
+      },
+      onResetPassword: () {
+        Get.to(() => const ForgotPasswordScreen());
+      },
+      onLogout: () async {
+        await UserService.logout();
+        Get.offAll(() => const LoginScreen());
+      },
+    ));
   }
 
   void _addPickup() async {
@@ -289,18 +279,14 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void _openQrScanner() async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => QrScannerScreen(
-          validIds: {},
-          onScanSuccess: (trackingNumber) {
-            setState(() {
-              _pickupController.text = trackingNumber;
-            });
-          },
-        ),
-      ),
-    );
+    final result = await Get.to(() => QrScannerScreen(
+      validIds: {},
+      onScanSuccess: (trackingNumber) {
+        setState(() {
+          _pickupController.text = trackingNumber;
+        });
+      },
+    ));
   }
 
   List<PickupItem> get _filteredPickupList {

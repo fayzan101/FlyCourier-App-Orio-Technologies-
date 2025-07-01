@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard.dart';
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'FLY Courier',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -53,11 +54,11 @@ class _SplashToLoginState extends State<SplashToLogin> {
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
       final isLoggedIn = await UserService.isLoggedIn();
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => isLoggedIn ? const DashboardScreen() : const LoginScreen(),
-        ),
-      );
+      if (isLoggedIn) {
+        Get.offAll(() => const DashboardScreen());
+      } else {
+        Get.offAll(() => const LoginScreen());
+      }
     }
   }
 

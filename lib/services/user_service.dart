@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:convert' show base64Encode, utf8;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart' as dio;
 import '../models/user_model.dart';
 import '../config/api_config.dart';
+import '../Network/network.dart';
 
 class UserService {
   static const String _userKey = 'user_data';
@@ -16,10 +17,7 @@ class UserService {
   static const String _stationNameKey = 'station_name';
   static const String _userInfoKey = 'user_info';
   
-  // Hardcoded API key - in production, this should be stored securely
-  // Replace this with your actual Go Express API key
-  // You can get this from your Go Express account or contact their support
-  // static const String _apiKey = 'go_express_api_key_2024';
+  
 
   // Save user data to SharedPreferences
   static Future<void> saveUser(UserModel user) async {
@@ -54,64 +52,44 @@ class UserService {
 
   // Validate login credentials with API
   static Future<bool> validateLoginWithAPI(String email, String password) async {
-    final url = Uri.parse('https://thegoexpress.com/api/app_login');
+    final url = 'https://thegoexpress.com/api/app_login';
     try {
-      // Debug print for the Authorization header
       print('Authorization Header: $email:$password');
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': APIConfig.apiKey,
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      );
-
-      print('Status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> json = jsonDecode(response.body);
-        
-        // Check if the API returned an error response
-        if (json['status'] == 0 || json['data'] == null) {
-          print('Login failed: ${json['message'] ?? 'Invalid credentials'}');
-          return false;
-        }
-        
-        // Check if the response indicates successful authentication
-        if (json['status'] == 1 &&
-            json['data'] != null &&
-            json['data']['response'] == 200 &&
-            json['data']['body'] is List &&
-            json['data']['body'].isNotEmpty) {
-          
-          final user = json['data']['body'][0];
-          
-          final empCode = user['emp_code'] ?? '';
-          final empName = user['emp_name'] ?? '';
-          final stationName = user['station_name'] ?? '';
-
-          // Store in SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('emp_code', empCode);
-          await prefs.setString('emp_name', empName);
-          await prefs.setString('station_name', stationName);
-          await prefs.setString('user_info', jsonEncode(user));
-          await prefs.setBool('is_logged_in', true);
-          // Save logged in name and password
-          await prefs.setString('logged_in_name', empName);
-          await prefs.setString('logged_in_password', password);
-          return true;
-        } else {
-          print('Login failed: ${json['data']?['message'] ?? 'Unknown error'}');
-          return false;
-        }
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': APIConfig.apiKey,
+      };
+      final data = jsonEncode({
+        'email': email,
+        'password': password,
+      });
+      final responseData = await Network.postApi(url, data, headers);
+      print('Response body: $responseData');
+      final json = responseData is String ? jsonDecode(responseData) : responseData;
+      if (json['status'] == 0 || json['data'] == null) {
+        print('Login failed: ${json['message'] ?? 'Invalid credentials'}');
+        return false;
+      }
+      if (json['status'] == 1 &&
+          json['data'] != null &&
+          json['data']['response'] == 200 &&
+          json['data']['body'] is List &&
+          json['data']['body'].isNotEmpty) {
+        final user = json['data']['body'][0];
+        final empCode = user['emp_code'] ?? '';
+        final empName = user['emp_name'] ?? '';
+        final stationName = user['station_name'] ?? '';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('emp_code', empCode);
+        await prefs.setString('emp_name', empName);
+        await prefs.setString('station_name', stationName);
+        await prefs.setString('user_info', jsonEncode(user));
+        await prefs.setBool('is_logged_in', true);
+        await prefs.setString('logged_in_name', empName);
+        await prefs.setString('logged_in_password', password);
+        return true;
       } else {
-        print('HTTP error: ${response.statusCode}');
+        print('Login failed: ${json['data']?['message'] ?? 'Unknown error'}');
         return false;
       }
     } catch (e) {
@@ -153,72 +131,49 @@ class UserService {
 
   // Alternative method: Validate login with API key and credential validation
   static Future<bool> validateLoginWithAPIKey(String email, String password) async {
-    final url = Uri.parse('https://thegoexpress.com/api/app_login');
+    final url = 'https://thegoexpress.com/api/app_login';
     try {
-      // Debug print for the Authorization header
       print('Authorization Header: $email:$password');
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': APIConfig.apiKey,
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-          'validate_credentials': true, // Flag to indicate credential validation is required
-        }),
-      );
-
-      print('Status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> json = jsonDecode(response.body);
-        
-        // Check for authentication failure
-        if (json['status'] == 0 || json['data'] == null) {
-          print('Login failed: ${json['message'] ?? 'Invalid credentials'}');
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': APIConfig.apiKey,
+      };
+      final data = jsonEncode({
+        'email': email,
+        'password': password,
+        'validate_credentials': true,
+      });
+      final responseData = await Network.postApi(url, data, headers);
+      print('Response body: $responseData');
+      final json = responseData is String ? jsonDecode(responseData) : responseData;
+      if (json['status'] == 0 || json['data'] == null) {
+        print('Login failed: ${json['message'] ?? 'Invalid credentials'}');
+        return false;
+      }
+      if (json['status'] == 1 &&
+          json['data'] != null &&
+          json['data']['response'] == 200 &&
+          json['data']['body'] is List &&
+          json['data']['body'].isNotEmpty) {
+        final user = json['data']['body'][0];
+        final empCode = user['emp_code'] ?? '';
+        final empName = user['emp_name'] ?? '';
+        final stationName = user['station_name'] ?? '';
+        if (empCode.isEmpty || empName.isEmpty) {
+          print('Invalid user data returned');
           return false;
         }
-        
-        // Check if the response indicates successful authentication
-        if (json['status'] == 1 &&
-            json['data'] != null &&
-            json['data']['response'] == 200 &&
-            json['data']['body'] is List &&
-            json['data']['body'].isNotEmpty) {
-          
-          final user = json['data']['body'][0];
-          
-          // Validate that the returned user data is legitimate
-          final empCode = user['emp_code'] ?? '';
-          final empName = user['emp_name'] ?? '';
-          final stationName = user['station_name'] ?? '';
-          
-          // Additional validation: ensure we have valid user data
-          if (empCode.isEmpty || empName.isEmpty) {
-            print('Invalid user data returned');
-            return false;
-          }
-
-          // Store in SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('emp_code', empCode);
-          await prefs.setString('emp_name', empName);
-          await prefs.setString('station_name', stationName);
-          await prefs.setString('user_info', jsonEncode(user));
-          await prefs.setBool('is_logged_in', true);
-          // Save logged in name and password
-          await prefs.setString('logged_in_name', empName);
-          await prefs.setString('logged_in_password', password);
-          return true;
-        } else {
-          print('Login failed: ${json['data']?['message'] ?? 'Unknown error'}');
-          return false;
-        }
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('emp_code', empCode);
+        await prefs.setString('emp_name', empName);
+        await prefs.setString('station_name', stationName);
+        await prefs.setString('user_info', jsonEncode(user));
+        await prefs.setBool('is_logged_in', true);
+        await prefs.setString('logged_in_name', empName);
+        await prefs.setString('logged_in_password', password);
+        return true;
       } else {
-        print('HTTP error: ${response.statusCode}');
+        print('Login failed: ${json['data']?['message'] ?? 'Unknown error'}');
         return false;
       }
     } catch (e) {

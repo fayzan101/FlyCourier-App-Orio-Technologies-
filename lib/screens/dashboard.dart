@@ -10,6 +10,9 @@ import 'profile_screen.dart';
 import 'sidebar_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:get/get.dart';
+import '../Utils/Colors/color_resources.dart';
+import '../Utils/custom_snackbar.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool showLoginSuccess;
@@ -28,51 +31,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadUserName();
     _loadArrivalFlag();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
     if (widget.showLoginSuccess) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.green,
-            elevation: 6,
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            duration: const Duration(seconds: 3),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            content: Stack(
-              children: [
-                SizedBox(
-                  height: 60,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      '✅ Login successful!',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: GestureDetector(
-                    onTap: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-                    child: const Icon(Icons.close, color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+      // Delay to ensure context is ready
+      Future.delayed(Duration(milliseconds: 300), () {
+        customSnackBar('Success', 'Login successful!');
       });
     }
   }
@@ -115,24 +77,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showMenuModal(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SidebarScreen(
-          userName: userName,
-          onLogout: () => _showLogoutSheet(context),
-          onResetPassword: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-            );
-          },
-          onProfile: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            );
-          },
-        ),
-      ),
-    );
+    Get.to(() => SidebarScreen(
+      userName: userName,
+      onLogout: () => _showLogoutSheet(context),
+      onResetPassword: () {
+        Get.to(() => const ForgotPasswordScreen());
+      },
+      onProfile: () {
+        Get.to(() => const ProfileScreen());
+      },
+    ));
   }
 
   void _showLogoutSheet(BuildContext context) {
@@ -143,14 +97,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return _LogoutSheet(
-          onNo: () => Navigator.of(context).pop(),
+          onNo: () => Get.back(),
           onYes: () async {
             await UserService.logout();
             if (mounted) {
-              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
-              );
+              Get.offAll(() => const LoginScreen());
             }
           },
         );
@@ -217,9 +168,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const PickupScreen()),
-                          );
+                          Get.to(() => const PickupScreen());
                         },
                         child: _DashboardCard(
                           icon: Icons.local_shipping,
@@ -232,9 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: showArrivalBox
                           ? GestureDetector(
                               onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const ArrivalScreen()),
-                                );
+                                Get.to(() => const ArrivalScreen());
                               },
                               child: _DashboardCard(
                                 icon: Icons.inventory_2,

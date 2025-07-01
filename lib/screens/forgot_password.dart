@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'dashboard.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
@@ -121,11 +122,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                     onPressed: () {
                       _showSuccessSnackbar(context);
                       Future.delayed(const Duration(seconds: 1), () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) => const ResetPasswordScreen(),
-                          ),
-                        );
+                        Get.offAll(() => const ResetPasswordScreen());
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -224,12 +221,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               height: 44,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (_) => const DashboardScreen(),
-                    ),
-                  );
+                  Get.offAll(() => const DashboardScreen());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF18136E),

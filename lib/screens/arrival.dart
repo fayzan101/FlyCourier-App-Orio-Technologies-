@@ -10,6 +10,7 @@ import 'login_screen.dart';
 import 'forgot_password.dart';
 import 'profile_screen.dart';
 import 'qr_scanner_screen.dart';
+import 'package:get/get.dart';
 
 class ShipmentItem {
   final ParcelModel parcel;
@@ -49,30 +50,19 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
   }
 
   void _showSidebar() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SidebarScreen(
-          userName: userName,
-          onProfile: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            );
-          },
-          onResetPassword: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-            );
-          },
-          onLogout: () async {
-            await UserService.logout();
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (route) => false,
-            );
-          },
-        ),
-      ),
-    );
+    Get.to(() => SidebarScreen(
+      userName: userName,
+      onProfile: () {
+        Get.to(() => const ProfileScreen());
+      },
+      onResetPassword: () {
+        Get.to(() => const ForgotPasswordScreen());
+      },
+      onLogout: () async {
+        await UserService.logout();
+        Get.offAll(() => const LoginScreen());
+      },
+    ));
   }
 
   void _addShipment() async {
@@ -284,18 +274,14 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
   }
 
   void _openQrScanner() async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => QrScannerScreen(
-          validIds: {},
-          onScanSuccess: (trackingNumber) {
-            setState(() {
-              _shipmentController.text = trackingNumber;
-            });
-          },
-        ),
-      ),
-    );
+    final result = await Get.to(() => QrScannerScreen(
+      validIds: {},
+      onScanSuccess: (trackingNumber) {
+        setState(() {
+          _shipmentController.text = trackingNumber;
+        });
+      },
+    ));
   }
 
   List<ShipmentItem> get _filteredShipmentList {
