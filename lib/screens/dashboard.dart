@@ -179,7 +179,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0,
+          elevation: 1,
+          surfaceTintColor: Colors.white,
+          scrolledUnderElevation: 1,
           automaticallyImplyLeading: false,
           title: const SafeArea(child: _FlyCourierBranding()),
           actions: [
@@ -190,7 +192,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         body: SafeArea(
-          bottom: false,
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16),
