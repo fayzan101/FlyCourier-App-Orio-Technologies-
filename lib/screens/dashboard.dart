@@ -8,6 +8,8 @@ import 'Pickup.dart';
 import 'arrival.dart';
 import 'profile_screen.dart';
 import 'sidebar_menu.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class DashboardScreen extends StatefulWidget {
   final bool showLoginSuccess;
@@ -19,11 +21,13 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   String userName = 'User';
+  bool showArrivalBox = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _loadArrivalFlag();
   }
 
   @override
@@ -88,6 +92,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
           userName = user.fullName;
         });
       }
+    }
+  }
+
+  void _loadArrivalFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userInfoString = prefs.getString('user_info');
+    if (userInfoString != null) {
+      final userInfo = jsonDecode(userInfoString);
+      // userInfo may be a Map or a String, handle both
+      int arrival = 0;
+      if (userInfo is Map && userInfo.containsKey('arrival')) {
+        arrival = int.tryParse(userInfo['arrival'].toString()) ?? 0;
+      } else if (userInfo is String) {
+        final userMap = jsonDecode(userInfo);
+        arrival = int.tryParse(userMap['arrival'].toString()) ?? 0;
+      }
+      setState(() {
+        showArrivalBox = arrival == 1;
+      });
     }
   }
 
@@ -206,17 +229,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const ArrivalScreen()),
-                          );
-                        },
-                        child: _DashboardCard(
-                          icon: Icons.inventory_2,
-                          label: 'Arrival',
-                        ),
-                      ),
+                      child: showArrivalBox
+                          ? GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const ArrivalScreen()),
+                                );
+                              },
+                              child: _DashboardCard(
+                                icon: Icons.inventory_2,
+                                label: 'Arrival',
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),
