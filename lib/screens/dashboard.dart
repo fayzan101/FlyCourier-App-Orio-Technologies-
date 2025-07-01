@@ -26,11 +26,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _loadUserName() async {
-    final user = await UserService.getUser();
-    if (user != null && mounted) {
+    // Try to get user info from API authentication first
+    final userInfo = await UserService.getUserInfo();
+    if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty && mounted) {
       setState(() {
-        userName = user.fullName;
+        userName = userInfo['emp_name']!;
       });
+    } else {
+      // Fallback to old user model if API data is not available
+      final user = await UserService.getUser();
+      if (user != null && mounted) {
+        setState(() {
+          userName = user.fullName;
+        });
+      }
     }
   }
 

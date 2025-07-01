@@ -4,6 +4,7 @@ import 'forgot_password.dart';
 import 'create_account.dart';
 import 'dashboard.dart';
 import '../services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -22,12 +23,14 @@ class _LoginScreenState extends State<LoginScreen> {
   // Form key for validation
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _loginError = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _emailController.addListener(_resetError);
     _passwordController.addListener(_resetError);
+    _passwordController.text = '';
   }
 
   void _resetError() {
@@ -49,8 +52,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _signIn() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+        _loginError = false;
+      });
+
       try {
-        final isValid = await UserService.validateLogin(
+        final isValid = await UserService.validateLoginWithAPI(
           _emailController.text.trim(),
           _passwordController.text,
         );
@@ -59,7 +67,17 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) {
             setState(() {
               _loginError = false;
+              _isLoading = false;
             });
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('✅ Login successful!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Wait a moment so the user sees the message
+            await Future.delayed(const Duration(milliseconds: 800));
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const DashboardScreen()),
             );
@@ -68,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) {
             setState(() {
               _loginError = true;
+              _isLoading = false;
             });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -79,6 +98,9 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } catch (e) {
         if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error signing in: $e'),
@@ -220,6 +242,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
+                        // Add minimum password length validation
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
                         return null;
                       },
                     ),
@@ -253,15 +279,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: _signIn,
-                        child: const Text(
-                          'Sign in',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        onPressed: _isLoading ? null : _signIn,
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Sign in',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 32),
