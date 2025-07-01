@@ -13,6 +13,84 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import '../Utils/Colors/color_resources.dart';
 import '../Utils/custom_snackbar.dart';
+import 'dart:async';
+
+class ArrivalController extends GetxController {
+  var showArrivalBox = false.obs;
+  Timer? _pollingTimer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchArrivalFlag();
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(Duration(seconds: 5), (timer) {
+      fetchArrivalFlag();
+    });
+  }
+
+  @override
+  void onClose() {
+    _pollingTimer?.cancel();
+    super.onClose();
+  }
+
+  Future<void> fetchArrivalFlag() async {
+    final userInfo = await UserService.getUserInfo();
+    int arrival = int.tryParse(userInfo['arrival']?.toString() ?? '0') ?? 0;
+    showArrivalBox.value = arrival == 1;
+  }
+}
+
+class DashboardCardController extends GetxController {
+  var showLoadsheet = false.obs;
+  var showManifest = false.obs;
+  var showDeManifest = false.obs;
+  var showCreateSheet = false.obs;
+  var showDelivery = false.obs;
+  var showTracking = false.obs;
+  var showReport = false.obs;
+  var showPickup = false.obs;
+  var showArrival = false.obs;
+
+  Timer? _pollingTimer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchFlags();
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(Duration(seconds: 5), (timer) {
+      fetchFlags();
+    });
+  }
+
+  @override
+  void onClose() {
+    _pollingTimer?.cancel();
+    super.onClose();
+  }
+
+  Future<void> fetchFlags() async {
+    final prefs = await SharedPreferences.getInstance();
+    showLoadsheet.value = (prefs.getInt('loadsheet') ?? 0) == 1;
+    showManifest.value = (prefs.getInt('manifest') ?? 0) == 0;
+    showReport.value = (prefs.getInt('report') ?? 0) == 0;
+    showDeManifest.value = (prefs.getInt('de_manifest') ?? 0) == 0;
+    showCreateSheet.value = (prefs.getInt('create_sheet') ?? 0) == 0;
+    showDelivery.value = (prefs.getInt('delivery') ?? 0) == 0;
+    showTracking.value = (prefs.getInt('tracking') ?? 0) == 1;
+    int arrival = int.tryParse(prefs.getString('arrival') ?? '0') ?? 0;
+    showPickup.value = arrival == 0;
+    showArrival.value = arrival == 0;
+  }
+}
 
 class DashboardScreen extends StatefulWidget {
   final bool showLoginSuccess;
@@ -24,15 +102,13 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   String userName = 'User';
-  bool showArrivalBox = false;
+  final DashboardCardController cardController = Get.put(DashboardCardController());
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
-    _loadArrivalFlag();
     if (widget.showLoginSuccess) {
-      // Delay to ensure context is ready
       Future.delayed(Duration(milliseconds: 300), () {
         customSnackBar('Success', 'Login successful!');
       });
@@ -40,39 +116,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _loadUserName() async {
-    // Try to get user info from API authentication first
     final userInfo = await UserService.getUserInfo();
     if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty && mounted) {
       setState(() {
         userName = userInfo['emp_name']!;
       });
     } else {
-      // Fallback to old user model if API data is not available
       final user = await UserService.getUser();
       if (user != null && mounted) {
         setState(() {
           userName = user.fullName;
         });
       }
-    }
-  }
-
-  void _loadArrivalFlag() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userInfoString = prefs.getString('user_info');
-    if (userInfoString != null) {
-      final userInfo = jsonDecode(userInfoString);
-      // userInfo may be a Map or a String, handle both
-      int arrival = 0;
-      if (userInfo is Map && userInfo.containsKey('arrival')) {
-        arrival = int.tryParse(userInfo['arrival'].toString()) ?? 0;
-      } else if (userInfo is String) {
-        final userMap = jsonDecode(userInfo);
-        arrival = int.tryParse(userMap['arrival'].toString()) ?? 0;
-      }
-      setState(() {
-        showArrivalBox = arrival == 1;
-      });
     }
   }
 
@@ -100,6 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onNo: () => Get.back(),
           onYes: () async {
             await UserService.logout();
+            Get.delete<DashboardCardController>();
             if (mounted) {
               Get.offAll(() => const LoginScreen());
             }
@@ -125,7 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const _FlyCourierBranding(),
+          title: const SafeArea(child: _FlyCourierBranding()),
           actions: [
             IconButton(
               icon: const Icon(Icons.menu, color: Colors.black, size: 28),
@@ -135,64 +191,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         body: SafeArea(
           bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8, top: 8),
-                  child: Text(
-                    'Dashboard',
-                    style: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Text(
-                    'Here is the list of operational process',
-                    style: GoogleFonts.poppins(
-                      color: Color(0xFF7B7B7B),
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          Get.to(() => const PickupScreen());
-                        },
-                        child: _DashboardCard(
-                          icon: Icons.local_shipping,
-                          label: 'Pickup',
-                        ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 8),
+                    child: Text(
+                      'Dashboard',
+                      style: GoogleFonts.poppins(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: showArrivalBox
-                          ? GestureDetector(
-                              onTap: () {
-                                Get.to(() => const ArrivalScreen());
-                              },
-                              child: _DashboardCard(
-                                icon: Icons.inventory_2,
-                                label: 'Arrival',
-                              ),
-                            )
-                          : const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text(
+                      'Here is the list of operational process',
+                      style: GoogleFonts.poppins(
+                        color: Color(0xFF7B7B7B),
+                        fontSize: 14,
+                      ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Obx(() => GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 20,
+                      crossAxisSpacing: 20,
+                      childAspectRatio: 1.15,
+                      children: [
+                        if (cardController.showLoadsheet.value)
+                          _DashboardCard(icon: Icons.assignment, label: 'Loadsheet'),
+                        if (cardController.showPickup.value)
+                          GestureDetector(
+                            onTap: () {
+                              Get.to(() => const PickupScreen());
+                            },
+                            child: _DashboardCard(icon: Icons.local_shipping, label: 'Pickup'),
+                          ),
+                        if (cardController.showArrival.value)
+                          GestureDetector(
+                            onTap: () {
+                              Get.to(() => const ArrivalScreen());
+                            },
+                            child: _DashboardCard(icon: Icons.inventory_2, label: 'Arrival'),
+                          ),
+                        if (cardController.showManifest.value)
+                          _DashboardCard(icon: Icons.list_alt, label: 'Manifest'),
+                        if (cardController.showDeManifest.value)
+                          _DashboardCard(icon: Icons.assignment_return, label: 'De Manifest'),
+                        if (cardController.showCreateSheet.value)
+                          _DashboardCard(icon: Icons.create, label: 'Create Sheet'),
+                        if (cardController.showDelivery.value)
+                          _DashboardCard(icon: Icons.delivery_dining, label: 'Delivery'),
+                        if (cardController.showTracking.value)
+                          _DashboardCard(icon: Icons.track_changes, label: 'Tracking'),
+                        if (cardController.showReport.value)
+                          _DashboardCard(icon: Icons.bar_chart, label: 'Report'),
+                      ],
+                    )),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

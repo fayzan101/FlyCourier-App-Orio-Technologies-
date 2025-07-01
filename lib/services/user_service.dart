@@ -87,6 +87,8 @@ class UserService {
         await prefs.setBool('is_logged_in', true);
         await prefs.setString('logged_in_name', empName);
         await prefs.setString('logged_in_password', password);
+        await prefs.setString('arrival', user['arrival']?.toString() ?? '0');
+        await prefs.setInt('loadsheet', int.tryParse(user['loadsheet']?.toString() ?? '0') ?? 0);
         return true;
       } else {
         print('Login failed: ${json['data']?['message'] ?? 'Unknown error'}');
@@ -105,6 +107,7 @@ class UserService {
       'emp_code': prefs.getString(_empCodeKey),
       'emp_name': prefs.getString(_empNameKey),
       'station_name': prefs.getString(_stationNameKey),
+      'arrival': prefs.getString('arrival'),
     };
   }
 
@@ -171,6 +174,8 @@ class UserService {
         await prefs.setBool('is_logged_in', true);
         await prefs.setString('logged_in_name', empName);
         await prefs.setString('logged_in_password', password);
+        await prefs.setString('arrival', user['arrival']?.toString() ?? '0');
+        await prefs.setInt('loadsheet', int.tryParse(user['loadsheet']?.toString() ?? '0') ?? 0);
         return true;
       } else {
         print('Login failed: ${json['data']?['message'] ?? 'Unknown error'}');
