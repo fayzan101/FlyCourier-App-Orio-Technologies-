@@ -27,6 +27,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardCardController cardController = Get.put(DashboardCardController());
   String userName = 'User';
+  bool _loginSnackbarShown = false;
 
   @override
   void initState() {
@@ -84,7 +85,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.showLoginSuccess) {
+    if (widget.showLoginSuccess && !_loginSnackbarShown) {
+      _loginSnackbarShown = true;
       Future.delayed(Duration(milliseconds: 300), () {
         customSnackBar('Success', 'Login successful!');
       });

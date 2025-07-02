@@ -479,28 +479,32 @@ class _PickupScreenState extends State<PickupScreen> {
             ),
           ),
         ),
-        bottomNavigationBar: _selectedShipmentNo == null && cardController.pickupList.isNotEmpty
-            ? SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF18136E),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+        bottomNavigationBar: Obx(() {
+          if (_selectedShipmentNo == null && cardController.pickupList.isNotEmpty) {
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF18136E),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      onPressed: _showSuccessDialog,
-                      child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
+                    onPressed: _showSuccessDialog,
+                    child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
-              )
-            : null,
+              ),
+            );
+          } else {
+            return SizedBox.shrink();
+          }
+        }),
       ),
     );
   }
