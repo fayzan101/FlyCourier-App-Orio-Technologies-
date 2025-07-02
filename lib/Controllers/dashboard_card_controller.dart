@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../screens/Pickup.dart';
 
 class DashboardCardController extends GetxController {
   var showManifest = false.obs;
@@ -11,6 +12,7 @@ class DashboardCardController extends GetxController {
   var showReport = false.obs;
   var showPickup = false.obs;
   var showArrival = false.obs;
+  var pickupList = <PickupItem>[].obs;
 
   Timer? _pollingTimer;
 

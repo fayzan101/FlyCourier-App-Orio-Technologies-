@@ -11,6 +11,7 @@ import 'forgot_password.dart';
 import 'profile_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'package:get/get.dart';
+import '../controllers/dashboard_card_controller.dart';
 
 class PickupItem {
   final ParcelModel parcel;
@@ -29,7 +30,7 @@ class PickupScreen extends StatefulWidget {
 class _PickupScreenState extends State<PickupScreen> {
   String userName = '';
   final TextEditingController _searchController = TextEditingController();
-  List<PickupItem> _pickupList = [];
+  final DashboardCardController cardController = Get.find<DashboardCardController>();
   bool _selectAll = false;
   String _searchQuery = '';
   String? _selectedShipmentNo;
@@ -75,30 +76,26 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void _toggleSelectAll() {
-    setState(() {
-      _selectAll = !_selectAll;
-      for (var item in _pickupList) {
-        item.selected = _selectAll;
-      }
-    });
+    _selectAll = !_selectAll;
+    for (var item in cardController.pickupList) {
+      item.selected = _selectAll;
+    }
+    cardController.pickupList.refresh();
   }
 
   void _deleteSelected() {
-    setState(() {
-      final deletedIds = _pickupList.where((item) => item.selected).map((item) => item.parcel.shipmentNo).toList();
-      _pickupList.removeWhere((item) => item.selected);
-      _selectAll = false;
-      // Notify the scanner to remove these IDs
-      for (final id in deletedIds) {
-        if (QrScannerScreen.scannerKey.currentState != null) {
-          QrScannerScreen.scannerKey.currentState!.removeScannedId(id);
-        }
+    final deletedIds = cardController.pickupList.where((item) => item.selected).map((item) => item.parcel.shipmentNo).toList();
+    cardController.pickupList.removeWhere((item) => item.selected);
+    _selectAll = false;
+    for (final id in deletedIds) {
+      if (QrScannerScreen.scannerKey.currentState != null) {
+        QrScannerScreen.scannerKey.currentState!.removeScannedId(id);
       }
-    });
+    }
   }
 
   void _showDeleteDialog() {
-    final selectedCount = _pickupList.where((item) => item.selected).length;
+    final selectedCount = cardController.pickupList.where((item) => item.selected).length;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -230,10 +227,8 @@ class _PickupScreenState extends State<PickupScreen> {
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          setState(() {
-                            _pickupList.clear();
-                            _selectAll = false;
-                          });
+                          cardController.pickupList.clear();
+                          _selectAll = false;
                         },
                         child: Text('Ok', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
@@ -249,17 +244,15 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void _startContinuousScan() async {
-    final scannedNumbers = _pickupList.map((item) => item.parcel.shipmentNo).toSet();
+    final scannedNumbers = cardController.pickupList.map((item) => item.parcel.shipmentNo).toSet();
     await Get.to(() => QrScannerScreen(
       key: QrScannerScreen.scannerKey,
       validIds: scannedNumbers,
       onScanSuccess: (trackingNumber) async {
-        if (!_pickupList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
+        if (!cardController.pickupList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
           final parcel = await ParcelService.getParcelByTrackingNumber(trackingNumber);
           if (parcel != null) {
-            setState(() {
-              _pickupList.add(PickupItem(parcel: parcel));
-            });
+            cardController.pickupList.add(PickupItem(parcel: parcel));
           }
         }
       },
@@ -267,8 +260,8 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   List<PickupItem> get _filteredPickupList {
-    if (_searchQuery.isEmpty) return _pickupList;
-    return _pickupList
+    if (_searchQuery.isEmpty) return cardController.pickupList;
+    return cardController.pickupList
         .where((item) => 
           item.parcel.shipmentNo.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           item.parcel.consigneeName.toLowerCase().contains(_searchQuery.toLowerCase())
@@ -278,7 +271,6 @@ class _PickupScreenState extends State<PickupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasSelected = _pickupList.any((item) => item.selected);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.white,
@@ -373,8 +365,10 @@ class _PickupScreenState extends State<PickupScreen> {
                     ),
                   ],
                 ),
-                if (_pickupList.isNotEmpty) ...[
-                  Expanded(
+                Obx(() {
+                  if (cardController.pickupList.isEmpty) return SizedBox.shrink();
+                  final filtered = _filteredPickupList;
+                  return Expanded(
                     child: Column(
                       children: [
                         Row(
@@ -386,7 +380,7 @@ class _PickupScreenState extends State<PickupScreen> {
                             Text(_selectAll ? 'Unselect All' : 'Select All',
                                 style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16)),
                             const Spacer(),
-                            if (hasSelected)
+                            if (filtered.any((item) => item.selected))
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red[100],
@@ -402,9 +396,9 @@ class _PickupScreenState extends State<PickupScreen> {
                         const SizedBox(height: 8),
                         Expanded(
                           child: ListView.builder(
-                            itemCount: _selectedShipmentNo == null ? _filteredPickupList.length : _filteredPickupList.where((item) => item.parcel.shipmentNo == _selectedShipmentNo).length,
+                            itemCount: _selectedShipmentNo == null ? filtered.length : filtered.where((item) => item.parcel.shipmentNo == _selectedShipmentNo).length,
                             itemBuilder: (context, index) {
-                              final item = _selectedShipmentNo == null ? _filteredPickupList[index] : _filteredPickupList.firstWhere((i) => i.parcel.shipmentNo == _selectedShipmentNo);
+                              final item = _selectedShipmentNo == null ? filtered[index] : filtered.firstWhere((i) => i.parcel.shipmentNo == _selectedShipmentNo);
                               return Card(
                                 color: item.selected ? Colors.grey[100] : Colors.white,
                                 margin: const EdgeInsets.symmetric(vertical: 4),
@@ -414,10 +408,9 @@ class _PickupScreenState extends State<PickupScreen> {
                                       leading: Checkbox(
                                         value: item.selected,
                                         onChanged: (val) {
-                                          setState(() {
-                                            item.selected = val ?? false;
-                                            _selectAll = _pickupList.isNotEmpty && _pickupList.every((e) => e.selected);
-                                          });
+                                          item.selected = val ?? false;
+                                          _selectAll = cardController.pickupList.isNotEmpty && cardController.pickupList.every((e) => e.selected);
+                                          cardController.pickupList.refresh();
                                         },
                                       ),
                                       title: Text(
@@ -433,9 +426,8 @@ class _PickupScreenState extends State<PickupScreen> {
                                               color: const Color(0xFF18136E),
                                             ),
                                             onPressed: () {
-                                              setState(() {
-                                                item.isExpanded = !item.isExpanded;
-                                              });
+                                              item.isExpanded = !item.isExpanded;
+                                              cardController.pickupList.refresh();
                                             },
                                           ),
                                         ],
@@ -481,30 +473,34 @@ class _PickupScreenState extends State<PickupScreen> {
                         ),
                       ],
                     ),
-                  ),
-                  if (_selectedShipmentNo == null)
-                    SafeArea(
-                      top: false,
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF18136E),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: _showSuccessDialog,
-                          child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ),
-                ],
+                  );
+                }),
               ],
             ),
           ),
         ),
+        bottomNavigationBar: _selectedShipmentNo == null && cardController.pickupList.isNotEmpty
+            ? SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF18136E),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      onPressed: _showSuccessDialog,
+                      child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }
