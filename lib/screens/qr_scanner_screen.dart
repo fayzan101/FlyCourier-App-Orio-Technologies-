@@ -6,10 +6,12 @@ import '../services/user_service.dart';
 import '../services/parcel_service.dart';
 import '../models/parcel_model.dart';
 import 'sidebar_menu.dart';
+import 'dart:async';
 
 class QrScannerScreen extends StatefulWidget {
   final Set<String> validIds;
   final void Function(String id) onScanSuccess;
+  static final GlobalKey<_QrScannerScreenState> scannerKey = GlobalKey<_QrScannerScreenState>();
 
   const QrScannerScreen({Key? key, required this.validIds, required this.onScanSuccess}) : super(key: key);
 
@@ -23,9 +25,12 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   String? scannedId;
   bool showSuccess = false;
   bool showError = false;
+  String? errorMessage;
   String userName = '';
   ParcelModel? scannedParcel;
   bool isLoading = false;
+  late Set<String> scannedIds;
+  Timer? _messageTimer;
 
   @override
   void initState() {
@@ -35,6 +40,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       overlays: [SystemUiOverlay.top],
     );
     _loadUserName();
+    scannedIds = Set<String>.from(widget.validIds);
   }
 
   void _loadUserName() async {
@@ -68,6 +74,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   @override
   void dispose() {
+    _messageTimer?.cancel();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     controller?.dispose();
     super.dispose();
@@ -90,23 +97,28 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
           scannedId = scanData.code;
           isLoading = true;
         });
-        
         if (scanData.code != null) {
+          if (scannedIds.contains(scanData.code!.toString())) {
+            _showMessage(success: false, error: 'Already scanned');
+            setState(() {
+              scannedParcel = null;
+              isLoading = false;
+            });
+            return;
+          }
           try {
-            final parcel = await ParcelService.getParcelByTrackingNumber(scanData.code!);
-            
+            final parcel = await ParcelService.getParcelByTrackingNumber(scanData.code!.toString());
             if (parcel != null) {
               setState(() {
                 scannedParcel = parcel;
-                showSuccess = true;
-                showError = false;
                 isLoading = false;
+                scannedIds.add(scanData.code!.toString());
               });
+              _showMessage(success: true);
               widget.onScanSuccess(scanData.code!);
             } else {
+              _showMessage(success: false, error: 'Invalid tracking number');
               setState(() {
-                showError = true;
-                showSuccess = false;
                 scannedParcel = null;
                 isLoading = false;
               });
@@ -120,6 +132,30 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             });
           }
         }
+      }
+    });
+  }
+
+  void removeScannedId(String id) {
+    setState(() {
+      scannedIds.remove(id);
+    });
+  }
+
+  void _showMessage({required bool success, String? error}) {
+    setState(() {
+      showSuccess = success;
+      showError = !success;
+      errorMessage = error;
+    });
+    _messageTimer?.cancel();
+    _messageTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() {
+          showSuccess = false;
+          showError = false;
+          errorMessage = null;
+        });
       }
     });
   }
@@ -205,7 +241,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             if (scannedParcel != null) ...[
                               const SizedBox(height: 4),
                               Text(
-                                '${scannedParcel!.recipientName} - ${scannedParcel!.status}',
+                                '${scannedParcel!.consigneeName} - ${scannedParcel!.shipmentNo}',
                                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 12),
                               ),
                             ],
@@ -226,7 +262,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(24),
                         ),
-                        child: Text('Invalid tracking number', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: Text(errorMessage ?? 'Error', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ),
@@ -292,19 +328,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
                             controller?.toggleFlash();
                           },
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-                            Navigator.of(context).pop(scannedId);
-                          },
-                          child: const Text('Save'),
                         ),
                       ],
                     ),

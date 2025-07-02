@@ -32,6 +32,7 @@ class _PickupScreenState extends State<PickupScreen> {
   List<PickupItem> _pickupList = [];
   bool _selectAll = false;
   String _searchQuery = '';
+  String? _selectedShipmentNo;
 
   @override
   void initState() {
@@ -75,8 +76,15 @@ class _PickupScreenState extends State<PickupScreen> {
 
   void _deleteSelected() {
     setState(() {
+      final deletedIds = _pickupList.where((item) => item.selected).map((item) => item.parcel.shipmentNo).toList();
       _pickupList.removeWhere((item) => item.selected);
       _selectAll = false;
+      // Notify the scanner to remove these IDs
+      for (final id in deletedIds) {
+        if (QrScannerScreen.scannerKey.currentState != null) {
+          QrScannerScreen.scannerKey.currentState!.removeScannedId(id);
+        }
+      }
     });
   }
 
@@ -219,35 +227,29 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void _startContinuousScan() async {
-    final scannedNumbers = <String>{};
-    bool continueScanning = true;
-    while (continueScanning && mounted) {
-      final result = await Get.to(() => QrScannerScreen(
-        validIds: scannedNumbers,
-        onScanSuccess: (trackingNumber) {
-          scannedNumbers.add(trackingNumber);
-        },
-      ));
-      if (result != null && result is String && !scannedNumbers.contains(result)) {
-        // Fetch parcel details from API
-        final parcel = await ParcelService.getParcelByTrackingNumber(result);
-        if (parcel != null && !_pickupList.any((item) => item.parcel.trackingNumber == result)) {
-          setState(() {
-            _pickupList.add(PickupItem(parcel: parcel));
-          });
+    final scannedNumbers = _pickupList.map((item) => item.parcel.shipmentNo).toSet();
+    await Get.to(() => QrScannerScreen(
+      key: QrScannerScreen.scannerKey,
+      validIds: scannedNumbers,
+      onScanSuccess: (trackingNumber) async {
+        if (!_pickupList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
+          final parcel = await ParcelService.getParcelByTrackingNumber(trackingNumber);
+          if (parcel != null) {
+            setState(() {
+              _pickupList.add(PickupItem(parcel: parcel));
+            });
+          }
         }
-      }
-      // Only scan once per tap, do not loop
-      continueScanning = false;
-    }
+      },
+    ));
   }
 
   List<PickupItem> get _filteredPickupList {
     if (_searchQuery.isEmpty) return _pickupList;
     return _pickupList
         .where((item) => 
-          item.parcel.trackingNumber.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          item.parcel.recipientName.toLowerCase().contains(_searchQuery.toLowerCase())
+          item.parcel.shipmentNo.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          item.parcel.consigneeName.toLowerCase().contains(_searchQuery.toLowerCase())
         )
         .toList();
   }
@@ -350,150 +352,115 @@ class _PickupScreenState extends State<PickupScreen> {
                   ],
                 ),
                 if (_pickupList.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  _filteredPickupList.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 32),
-                        child: Center(
-                          child: Text(
-                            'No ID found',
-                            style: GoogleFonts.poppins(fontWeight: FontWeight.w500, color: Colors.grey, fontSize: 16),
-                          ),
-                        ),
-                      )
-                    : Expanded(
-                        child: Column(
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _selectAll,
-                                  onChanged: (val) => _toggleSelectAll(),
-                                ),
-                                Text(_selectAll ? 'Unselect All' : 'Select All',
-                                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16)),
-                                const Spacer(),
-                                if (hasSelected)
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red[100],
-                                      foregroundColor: Colors.red,
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    ),
-                                    onPressed: _showDeleteDialog,
-                                    child: const Text('Delete'),
-                                  ),
-                              ],
+                            Checkbox(
+                              value: _selectAll,
+                              onChanged: (val) => _toggleSelectAll(),
                             ),
-                            const SizedBox(height: 8),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: _filteredPickupList.length,
-                                itemBuilder: (context, index) {
-                                  final item = _filteredPickupList[index];
-                                  return Card(
-                                    color: item.selected ? Colors.grey[100] : Colors.white,
-                                    margin: const EdgeInsets.symmetric(vertical: 4),
-                                    child: Column(
-                                      children: [
-                                        ListTile(
-                                          leading: Checkbox(
-                                            value: item.selected,
-                                            onChanged: (val) {
+                            Text(_selectAll ? 'Unselect All' : 'Select All',
+                                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16)),
+                            const Spacer(),
+                            if (hasSelected)
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[100],
+                                  foregroundColor: Colors.red,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                onPressed: _showDeleteDialog,
+                                child: const Text('Delete'),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: _selectedShipmentNo == null ? _filteredPickupList.length : _filteredPickupList.where((item) => item.parcel.shipmentNo == _selectedShipmentNo).length,
+                            itemBuilder: (context, index) {
+                              final item = _selectedShipmentNo == null ? _filteredPickupList[index] : _filteredPickupList.firstWhere((i) => i.parcel.shipmentNo == _selectedShipmentNo);
+                              return Card(
+                                color: item.selected ? Colors.grey[100] : Colors.white,
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      leading: Checkbox(
+                                        value: item.selected,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            item.selected = val ?? false;
+                                            _selectAll = _pickupList.isNotEmpty && _pickupList.every((e) => e.selected);
+                                          });
+                                        },
+                                      ),
+                                      title: Text(
+                                        'Pickup ID: ${item.parcel.shipmentNo}',
+                                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              item.isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                              color: const Color(0xFF18136E),
+                                            ),
+                                            onPressed: () {
                                               setState(() {
-                                                item.selected = val ?? false;
-                                                _selectAll = _pickupList.isNotEmpty && _pickupList.every((e) => e.selected);
+                                                item.isExpanded = !item.isExpanded;
                                               });
                                             },
                                           ),
-                                          title: Text(
-                                            item.parcel.trackingNumber,
-                                            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                                        ],
+                                      ),
+                                    ),
+                                    if (item.isExpanded)
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[50],
+                                          borderRadius: const BorderRadius.only(
+                                            bottomLeft: Radius.circular(4),
+                                            bottomRight: Radius.circular(4),
                                           ),
-                                          subtitle: Text(
-                                            item.parcel.recipientName,
-                                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.black54),
-                                          ),
-                                          trailing: Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                        ),
+                                        child: SingleChildScrollView(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: _getStatusColor(item.parcel.status),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Text(
-                                                  item.parcel.status,
-                                                  style: GoogleFonts.poppins(
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              IconButton(
-                                                icon: Icon(
-                                                  item.isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                                  color: const Color(0xFF18136E),
-                                                ),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    item.isExpanded = !item.isExpanded;
-                                                  });
-                                                },
-                                              ),
+                                              _buildDetailRow('Shipment No', item.parcel.shipmentNo),
+                                              _buildDetailRow('Shipment Date', item.parcel.shipmentDate),
+                                              _buildDetailRow('TPCN No', item.parcel.tpcnno),
+                                              _buildDetailRow('TP Name', item.parcel.tpname),
+                                              _buildDetailRow('Shipment Reference', item.parcel.shipmentReference),
+                                              _buildDetailRow('Consignee Name', item.parcel.consigneeName),
+                                              _buildDetailRow('Consignee Contact', item.parcel.consigneeContact),
+                                              _buildDetailRow('Product Detail', item.parcel.productDetail),
+                                              _buildDetailRow('Consignee Address', item.parcel.consigneeAddress),
+                                              _buildDetailRow('Destination City', item.parcel.destinationCity),
+                                              _buildDetailRow('Peices', item.parcel.peices),
+                                              _buildDetailRow('Weight', item.parcel.weight),
+                                              _buildDetailRow('Cash Collect', item.parcel.cashCollect),
+                                              _buildDetailRow('Created By', item.parcel.createdBy),
                                             ],
                                           ),
                                         ),
-                                        if (item.isExpanded)
-                                          Container(
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[50],
-                                              borderRadius: const BorderRadius.only(
-                                                bottomLeft: Radius.circular(4),
-                                                bottomRight: Radius.circular(4),
-                                              ),
-                                            ),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  _buildDetailRow('Recipient', item.parcel.recipientName),
-                                                  _buildDetailRow('Phone', item.parcel.recipientPhone),
-                                                  _buildDetailRow('Address', item.parcel.recipientAddress),
-                                                  const Divider(height: 16),
-                                                  _buildDetailRow('Sender', item.parcel.senderName),
-                                                  _buildDetailRow('Sender Phone', item.parcel.senderPhone),
-                                                  _buildDetailRow('Sender Address', item.parcel.senderAddress),
-                                                  const Divider(height: 16),
-                                                  _buildDetailRow('Weight', item.parcel.weight),
-                                                  _buildDetailRow('Dimensions', item.parcel.dimensions),
-                                                  _buildDetailRow('Package Type', item.parcel.packageType),
-                                                  _buildDetailRow('Insurance', item.parcel.insuranceValue),
-                                                  _buildDetailRow('Current Location', item.parcel.currentLocation),
-                                                  _buildDetailRow('Estimated Delivery', item.parcel.estimatedDelivery),
-                                                  if (item.parcel.notes.isNotEmpty) ...[
-                                                    const Divider(height: 16),
-                                                    _buildDetailRow('Notes', item.parcel.notes),
-                                                  ],
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                  if (_filteredPickupList.isNotEmpty)
+                      ],
+                    ),
+                  ),
+                  if (_selectedShipmentNo == null)
                     SafeArea(
                       top: false,
                       child: SizedBox(
@@ -550,24 +517,5 @@ class _PickupScreenState extends State<PickupScreen> {
         ],
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return const Color(0xFF4CAF50);
-      case 'out for delivery':
-        return const Color(0xFFFF9800);
-      case 'in transit':
-        return const Color(0xFF2196F3);
-      case 'pending pickup':
-        return const Color(0xFF9C27B0);
-      case 'processed':
-        return const Color(0xFF607D8B);
-      case 'received':
-        return const Color(0xFF795548);
-      default:
-        return const Color(0xFF757575);
-    }
   }
 }

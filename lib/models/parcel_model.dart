@@ -1,190 +1,119 @@
 class ParcelModel {
-  final String id;
-  final String trackingNumber;
-  final String recipientName;
-  final String recipientPhone;
-  final String recipientAddress;
-  final String senderName;
-  final String senderPhone;
-  final String senderAddress;
+  final String shipmentNo;
+  final String shipmentDate;
+  final String tpcnno;
+  final String tpname;
+  final String shipmentReference;
+  final String consigneeName;
+  final String consigneeContact;
+  final String productDetail;
+  final String consigneeAddress;
+  final String destinationCity;
+  final String peices;
   final String weight;
-  final String dimensions;
-  final String status;
-  final String currentLocation;
-  final String estimatedDelivery;
-  final String? pickupDate;
-  final String? deliveryDate;
-  final String notes;
-  final String packageType;
-  final String insuranceValue;
-  final String shippingCost;
+  final String cashCollect;
+  final String createdBy;
 
   ParcelModel({
-    required this.id,
-    required this.trackingNumber,
-    required this.recipientName,
-    required this.recipientPhone,
-    required this.recipientAddress,
-    required this.senderName,
-    required this.senderPhone,
-    required this.senderAddress,
+    required this.shipmentNo,
+    required this.shipmentDate,
+    required this.tpcnno,
+    required this.tpname,
+    required this.shipmentReference,
+    required this.consigneeName,
+    required this.consigneeContact,
+    required this.productDetail,
+    required this.consigneeAddress,
+    required this.destinationCity,
+    required this.peices,
     required this.weight,
-    required this.dimensions,
-    required this.status,
-    required this.currentLocation,
-    required this.estimatedDelivery,
-    this.pickupDate,
-    this.deliveryDate,
-    required this.notes,
-    required this.packageType,
-    required this.insuranceValue,
-    required this.shippingCost,
+    required this.cashCollect,
+    required this.createdBy,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'trackingNumber': trackingNumber,
-      'recipientName': recipientName,
-      'recipientPhone': recipientPhone,
-      'recipientAddress': recipientAddress,
-      'senderName': senderName,
-      'senderPhone': senderPhone,
-      'senderAddress': senderAddress,
+      'shipment_no': shipmentNo,
+      'shipment_date': shipmentDate,
+      'tpcnno': tpcnno,
+      'tpname': tpname,
+      'shipment_reference': shipmentReference,
+      'consignee_name': consigneeName,
+      'consignee_contact': consigneeContact,
+      'product_detail': productDetail,
+      'consignee_address': consigneeAddress,
+      'destination_city': destinationCity,
+      'peices': peices,
       'weight': weight,
-      'dimensions': dimensions,
-      'status': status,
-      'currentLocation': currentLocation,
-      'estimatedDelivery': estimatedDelivery,
-      'pickupDate': pickupDate,
-      'deliveryDate': deliveryDate,
-      'notes': notes,
-      'packageType': packageType,
-      'insuranceValue': insuranceValue,
-      'shippingCost': shippingCost,
+      'cash_collect': cashCollect,
+      'created_by': createdBy,
     };
   }
 
   factory ParcelModel.fromJson(Map<String, dynamic> json) {
     return ParcelModel(
-      id: json['id'] ?? '',
-      trackingNumber: json['trackingNumber'] ?? '',
-      recipientName: json['recipientName'] ?? '',
-      recipientPhone: json['recipientPhone'] ?? '',
-      recipientAddress: json['recipientAddress'] ?? '',
-      senderName: json['senderName'] ?? '',
-      senderPhone: json['senderPhone'] ?? '',
-      senderAddress: json['senderAddress'] ?? '',
-      weight: json['weight'] ?? '',
-      dimensions: json['dimensions'] ?? '',
-      status: json['status'] ?? '',
-      currentLocation: json['currentLocation'] ?? '',
-      estimatedDelivery: json['estimatedDelivery'] ?? '',
-      pickupDate: json['pickupDate'],
-      deliveryDate: json['deliveryDate'],
-      notes: json['notes'] ?? '',
-      packageType: json['packageType'] ?? '',
-      insuranceValue: json['insuranceValue'] ?? '',
-      shippingCost: json['shippingCost'] ?? '',
+      shipmentNo: json['shipment_no'] ?? '',
+      shipmentDate: json['shipment_date'] ?? '',
+      tpcnno: json['tpcnno'] ?? '',
+      tpname: json['tpname'] ?? '',
+      shipmentReference: json['shipment_reference'] ?? '',
+      consigneeName: json['consignee_name'] ?? '',
+      consigneeContact: json['consignee_contact'] ?? '',
+      productDetail: json['product_detail'] ?? '',
+      consigneeAddress: json['consignee_address'] ?? '',
+      destinationCity: json['destination_city'] ?? '',
+      peices: json['peices']?.toString() ?? '',
+      weight: json['weight']?.toString() ?? '',
+      cashCollect: json['cash_collect']?.toString() ?? '',
+      createdBy: json['created_by'] ?? '',
     );
   }
 
-  // Create a copy of the parcel with updated fields
   ParcelModel copyWith({
-    String? id,
-    String? trackingNumber,
-    String? recipientName,
-    String? recipientPhone,
-    String? recipientAddress,
-    String? senderName,
-    String? senderPhone,
-    String? senderAddress,
+    String? shipmentNo,
+    String? shipmentDate,
+    String? tpcnno,
+    String? tpname,
+    String? shipmentReference,
+    String? consigneeName,
+    String? consigneeContact,
+    String? productDetail,
+    String? consigneeAddress,
+    String? destinationCity,
+    String? peices,
     String? weight,
-    String? dimensions,
-    String? status,
-    String? currentLocation,
-    String? estimatedDelivery,
-    String? pickupDate,
-    String? deliveryDate,
-    String? notes,
-    String? packageType,
-    String? insuranceValue,
-    String? shippingCost,
+    String? cashCollect,
+    String? createdBy,
   }) {
     return ParcelModel(
-      id: id ?? this.id,
-      trackingNumber: trackingNumber ?? this.trackingNumber,
-      recipientName: recipientName ?? this.recipientName,
-      recipientPhone: recipientPhone ?? this.recipientPhone,
-      recipientAddress: recipientAddress ?? this.recipientAddress,
-      senderName: senderName ?? this.senderName,
-      senderPhone: senderPhone ?? this.senderPhone,
-      senderAddress: senderAddress ?? this.senderAddress,
+      shipmentNo: shipmentNo ?? this.shipmentNo,
+      shipmentDate: shipmentDate ?? this.shipmentDate,
+      tpcnno: tpcnno ?? this.tpcnno,
+      tpname: tpname ?? this.tpname,
+      shipmentReference: shipmentReference ?? this.shipmentReference,
+      consigneeName: consigneeName ?? this.consigneeName,
+      consigneeContact: consigneeContact ?? this.consigneeContact,
+      productDetail: productDetail ?? this.productDetail,
+      consigneeAddress: consigneeAddress ?? this.consigneeAddress,
+      destinationCity: destinationCity ?? this.destinationCity,
+      peices: peices ?? this.peices,
       weight: weight ?? this.weight,
-      dimensions: dimensions ?? this.dimensions,
-      status: status ?? this.status,
-      currentLocation: currentLocation ?? this.currentLocation,
-      estimatedDelivery: estimatedDelivery ?? this.estimatedDelivery,
-      pickupDate: pickupDate ?? this.pickupDate,
-      deliveryDate: deliveryDate ?? this.deliveryDate,
-      notes: notes ?? this.notes,
-      packageType: packageType ?? this.packageType,
-      insuranceValue: insuranceValue ?? this.insuranceValue,
-      shippingCost: shippingCost ?? this.shippingCost,
+      cashCollect: cashCollect ?? this.cashCollect,
+      createdBy: createdBy ?? this.createdBy,
     );
-  }
-
-  // Get status color for UI
-  String get statusColor {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return '#4CAF50'; // Green
-      case 'out for delivery':
-        return '#FF9800'; // Orange
-      case 'in transit':
-        return '#2196F3'; // Blue
-      case 'pending pickup':
-        return '#9C27B0'; // Purple
-      case 'processed':
-        return '#607D8B'; // Blue Grey
-      case 'received':
-        return '#795548'; // Brown
-      default:
-        return '#757575'; // Grey
-    }
-  }
-
-  // Get status icon for UI
-  String get statusIcon {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return 'check_circle';
-      case 'out for delivery':
-        return 'local_shipping';
-      case 'in transit':
-        return 'flight';
-      case 'pending pickup':
-        return 'schedule';
-      case 'processed':
-        return 'inventory';
-      case 'received':
-        return 'inbox';
-      default:
-        return 'info';
-    }
   }
 
   @override
   String toString() {
-    return 'ParcelModel(id: $id, trackingNumber: $trackingNumber, status: $status)';
+    return 'ParcelModel(shipmentNo: $shipmentNo, shipmentReference: $shipmentReference, status: $shipmentDate)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is ParcelModel && other.trackingNumber == trackingNumber;
+    return other is ParcelModel && other.shipmentNo == shipmentNo;
   }
 
   @override
-  int get hashCode => trackingNumber.hashCode;
+  int get hashCode => shipmentNo.hashCode;
 } 

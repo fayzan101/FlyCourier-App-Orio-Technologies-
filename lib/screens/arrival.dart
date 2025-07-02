@@ -67,7 +67,7 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
 
   void _addShipment() async {
     final trackingNumber = _shipmentController.text.trim();
-    if (trackingNumber.isNotEmpty && !_shipmentList.any((item) => item.parcel.trackingNumber == trackingNumber)) {
+    if (trackingNumber.isNotEmpty && !_shipmentList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
       try {
         // Fetch parcel details from API
         final parcel = await ParcelService.getParcelByTrackingNumber(trackingNumber);
@@ -82,7 +82,7 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Shipment added successfully: ${parcel.recipientName}'),
+              content: Text('Shipment added successfully: ${parcel.consigneeName}'),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
             ),
@@ -107,7 +107,7 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
           ),
         );
       }
-    } else if (_shipmentList.any((item) => item.parcel.trackingNumber == trackingNumber)) {
+    } else if (_shipmentList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
       // Show error if shipment already exists
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -288,8 +288,8 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
     if (_searchQuery.isEmpty) return _shipmentList;
     return _shipmentList
         .where((item) => 
-          item.parcel.trackingNumber.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          item.parcel.recipientName.toLowerCase().contains(_searchQuery.toLowerCase())
+          item.parcel.shipmentNo.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          item.parcel.consigneeName.toLowerCase().contains(_searchQuery.toLowerCase())
         )
         .toList();
   }
@@ -521,32 +521,16 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                                             },
                                           ),
                                           title: Text(
-                                            item.parcel.trackingNumber,
+                                            item.parcel.shipmentNo,
                                             style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                                           ),
                                           subtitle: Text(
-                                            item.parcel.recipientName,
+                                            item.parcel.consigneeName,
                                             style: GoogleFonts.poppins(fontSize: 12, color: Colors.black54),
                                           ),
                                           trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: _getStatusColor(item.parcel.status),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Text(
-                                                  item.parcel.status,
-                                                  style: GoogleFonts.poppins(
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
                                               IconButton(
                                                 icon: Icon(
                                                   item.isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
@@ -575,24 +559,20 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  _buildDetailRow('Recipient', item.parcel.recipientName),
-                                                  _buildDetailRow('Phone', item.parcel.recipientPhone),
-                                                  _buildDetailRow('Address', item.parcel.recipientAddress),
+                                                  _buildDetailRow('Recipient', item.parcel.consigneeName),
+                                                  _buildDetailRow('Phone', item.parcel.consigneeContact),
+                                                  _buildDetailRow('Address', item.parcel.consigneeAddress),
                                                   const Divider(height: 16),
-                                                  _buildDetailRow('Sender', item.parcel.senderName),
-                                                  _buildDetailRow('Sender Phone', item.parcel.senderPhone),
-                                                  _buildDetailRow('Sender Address', item.parcel.senderAddress),
-                                                  const Divider(height: 16),
+                                                  _buildDetailRow('Sender', item.parcel.createdBy),
                                                   _buildDetailRow('Weight', item.parcel.weight),
-                                                  _buildDetailRow('Dimensions', item.parcel.dimensions),
-                                                  _buildDetailRow('Package Type', item.parcel.packageType),
-                                                  _buildDetailRow('Insurance', item.parcel.insuranceValue),
-                                                  _buildDetailRow('Current Location', item.parcel.currentLocation),
-                                                  _buildDetailRow('Estimated Delivery', item.parcel.estimatedDelivery),
-                                                  if (item.parcel.notes.isNotEmpty) ...[
-                                                    const Divider(height: 16),
-                                                    _buildDetailRow('Notes', item.parcel.notes),
-                                                  ],
+                                                  _buildDetailRow('Product Detail', item.parcel.productDetail),
+                                                  _buildDetailRow('Destination City', item.parcel.destinationCity),
+                                                  _buildDetailRow('Shipment Date', item.parcel.shipmentDate),
+                                                  _buildDetailRow('Cash Collect', item.parcel.cashCollect),
+                                                  _buildDetailRow('TPCN No', item.parcel.tpcnno),
+                                                  _buildDetailRow('TP Name', item.parcel.tpname),
+                                                  _buildDetailRow('Shipment Reference', item.parcel.shipmentReference),
+                                                  _buildDetailRow('Pieces', item.parcel.peices),
                                                 ],
                                               ),
                                             ),
@@ -663,24 +643,5 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
         ],
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return const Color(0xFF4CAF50);
-      case 'out for delivery':
-        return const Color(0xFFFF9800);
-      case 'in transit':
-        return const Color(0xFF2196F3);
-      case 'pending pickup':
-        return const Color(0xFF9C27B0);
-      case 'processed':
-        return const Color(0xFF607D8B);
-      case 'received':
-        return const Color(0xFF795548);
-      default:
-        return const Color(0xFF757575);
-    }
   }
 }

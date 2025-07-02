@@ -16,28 +16,43 @@ import '../Utils/custom_snackbar.dart';
 import 'dart:async';
 import '../controllers/dashboard_card_controller.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final bool showLoginSuccess;
   DashboardScreen({Key? key, this.showLoginSuccess = false}) : super(key: key);
 
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardCardController cardController = Get.put(DashboardCardController());
-  final RxString userName = 'User'.obs;
+  String userName = 'User';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
 
   void _loadUserName() async {
     final userInfo = await UserService.getUserInfo();
     if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty) {
-      userName.value = userInfo['emp_name']!;
+      setState(() {
+        userName = userInfo['emp_name']!;
+      });
     } else {
       final user = await UserService.getUser();
       if (user != null) {
-        userName.value = user.fullName;
+        setState(() {
+          userName = user.fullName;
+        });
       }
     }
   }
 
   void _showMenuModal(BuildContext context) {
     Get.to(() => SidebarScreen(
-      userName: userName.value,
+      userName: userName,
       onLogout: () => _showLogoutSheet(context),
       onResetPassword: () {
         Get.to(() => const ForgotPasswordScreen());
@@ -69,9 +84,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Load user name once when the widget is built
-    _loadUserName();
-    if (showLoginSuccess) {
+    if (widget.showLoginSuccess) {
       Future.delayed(Duration(milliseconds: 300), () {
         customSnackBar('Success', 'Login successful!');
       });
