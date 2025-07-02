@@ -54,7 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _showMenuModal(BuildContext context) {
     Get.to(() => SidebarScreen(
       userName: userName,
-      onLogout: () => _showLogoutSheet(context),
+      onLogout: () => _showLogoutDialog(context),
       onResetPassword: () {
         Get.to(() => const ForgotPasswordScreen());
       },
@@ -64,20 +64,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ));
   }
 
-  void _showLogoutSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
       context: context,
-      isDismissible: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      barrierDismissible: false,
       builder: (context) {
-        return _LogoutSheet(
-          onNo: () => Get.back(),
-          onYes: () async {
-            await UserService.logout();
-            Get.delete<DashboardCardController>();
-            Get.offAll(() => const LoginScreen());
-          },
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 0),
+            child: Material(
+              color: Colors.transparent,
+              child: _LogoutDialog(
+                onNo: () => Navigator.of(context).pop(),
+                onYes: () async {
+                  Navigator.of(context).pop();
+                  await UserService.logout();
+                  Get.delete<DashboardCardController>();
+                  Get.offAll(() => const LoginScreen());
+                },
+              ),
+            ),
+          ),
         );
       },
     );
@@ -194,19 +202,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-class _LogoutSheet extends StatelessWidget {
+class _LogoutDialog extends StatelessWidget {
   final VoidCallback onNo;
   final VoidCallback onYes;
-  const _LogoutSheet({required this.onNo, required this.onYes});
+  const _LogoutDialog({required this.onNo, required this.onYes});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: BorderRadius.circular(16),
       ),
-      padding: EdgeInsets.fromLTRB(24, 32, 24, 32 + MediaQuery.of(context).viewPadding.bottom),
+      padding: EdgeInsets.fromLTRB(24, 32, 24, 24 + MediaQuery.of(context).viewPadding.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

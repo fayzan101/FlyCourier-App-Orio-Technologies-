@@ -176,6 +176,16 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void _showSuccessDialog() {
+    final total = cardController.pickupList.length;
+    final selectedCount = cardController.pickupList.where((item) => item.selected).length;
+    String message;
+    if (total == 1) {
+      message = 'This pickup has been created';
+    } else if (selectedCount > 0 && selectedCount < total) {
+      message = 'Selected pickups have been created';
+    } else {
+      message = 'All pickups have been created';
+    }
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -210,7 +220,7 @@ class _PickupScreenState extends State<PickupScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'All Pickups has been created',
+                      message,
                       style: GoogleFonts.poppins(color: Color(0xFF7B7B7B), fontSize: 15),
                       textAlign: TextAlign.center,
                     ),
@@ -227,7 +237,7 @@ class _PickupScreenState extends State<PickupScreen> {
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          cardController.pickupList.clear();
+                          cardController.pickupList.removeWhere((item) => item.selected);
                           _selectAll = false;
                         },
                         child: Text('Ok', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
