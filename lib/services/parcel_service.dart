@@ -46,4 +46,24 @@ class ParcelService {
       return null;
     }
   }
+
+  static Future<Response?> createLoadsheet(String shipmentNo) async {
+    final dio = Dio();
+    const url = 'https://thegoexpress.com/api/create_loadsheet';
+    final headers = {
+      'Authorization': 'zainKhan:demo@1234',
+      'Content-Type': 'application/json',
+    };
+    try {
+      final response = await dio.post(
+        url,
+        data: {'shipment_no': shipmentNo},
+        options: Options(headers: headers),
+      );
+      return response;
+    } catch (e) {
+      print('API error: $e');
+      return null;
+    }
+  }
 }

@@ -65,14 +65,26 @@ class SidebarScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Hi, $userName',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: darkBlue,
-                          ),
-                        ),
+                        userName.isEmpty || userName == 'Loading...'
+                          ? Row(
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                                SizedBox(width: 8),
+                                Text('Loading...', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18, color: darkBlue)),
+                              ],
+                            )
+                          : Text(
+                              'Hi, $userName',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: darkBlue,
+                              ),
+                            ),
                         const SizedBox(height: 2),
                         Text(
                           'Good Morning',
@@ -91,10 +103,8 @@ class SidebarScreen extends StatelessWidget {
                   leading: const Icon(Icons.person, color: darkBlue),
                   title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
                   onTap: () {
-                    Navigator.of(context).pop();
-                    Future.delayed(const Duration(milliseconds: 200), () {
-                      Get.to(() => ProfileScreen());
-                    });
+                    Get.back();
+                    Get.to(() => ProfileScreen());
                   },
                   contentPadding: EdgeInsets.zero,
                 ),

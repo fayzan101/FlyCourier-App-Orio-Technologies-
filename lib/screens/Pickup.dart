@@ -40,18 +40,27 @@ class _PickupScreenState extends State<PickupScreen> {
     _loadUserName();
   }
 
-  void _loadUserName() async {
-    final user = await UserService.getUser();
-    if (user != null && mounted) {
+  Future<void> _loadUserName() async {
+    final userInfo = await UserService.getUserInfo();
+    if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty) {
       setState(() {
-        userName = user.fullName;
+        userName = userInfo['emp_name']!;
       });
+    } else {
+      final user = await UserService.getUser();
+      if (user != null && mounted) {
+        setState(() {
+          userName = user.fullName;
+        });
+      }
     }
   }
 
-  void _showSidebar() {
+  void _showSidebar() async {
+    await _loadUserName();
+    if (!mounted) return;
     Get.to(() => SidebarScreen(
-      userName: userName,
+      userName: userName.isNotEmpty ? userName : 'Loading...',
       onProfile: () {
         Get.to(() => const ProfileScreen());
       },
@@ -170,56 +179,69 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void _showSuccessDialog() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      barrierDismissible: false,
       builder: (context) {
-        return Container(
-          margin: const EdgeInsets.only(top: 80),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE7E6F5),
-                  shape: BoxShape.circle,
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 0),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 padding: const EdgeInsets.all(24),
-                child: const Icon(Icons.check, color: Color(0xFF18136E), size: 56),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Success!',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.black),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'All Pickups has been created',
-                style: GoogleFonts.poppins(color: Color(0xFF7B7B7B), fontSize: 15),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF18136E),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE7E6F5),
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(24),
+                      child: const Icon(Icons.check, color: Color(0xFF18136E), size: 56),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Ok', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Success!',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.black),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'All Pickups has been created',
+                      style: GoogleFonts.poppins(color: Color(0xFF7B7B7B), fontSize: 15),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF18136E),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          setState(() {
+                            _pickupList.clear();
+                            _selectAll = false;
+                          });
+                        },
+                        child: Text('Ok', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       },

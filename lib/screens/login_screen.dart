@@ -69,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // Save remember me flag
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('remember_me', _rememberMe);
+          await prefs.setInt('loadsheet', 1);
           if (mounted) {
             setState(() {
               _loginError = false;
