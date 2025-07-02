@@ -16,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
+  bool _rememberMe = false;
   
   // Form controllers
   final TextEditingController _emailController = TextEditingController();
@@ -65,12 +66,14 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (isValid) {
+          // Save remember me flag
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('remember_me', _rememberMe);
           if (mounted) {
             setState(() {
               _loginError = false;
               _isLoading = false;
             });
-            // Do NOT show a SnackBar here for successful login!
             await Future.delayed(const Duration(milliseconds: 800));
             Get.offAll(() => DashboardScreen(showLoginSuccess: true));
           }
@@ -242,21 +245,48 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          Get.to(() => const ForgotPasswordScreen());
-                        },
-                        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
-                        child: const Text(
-                          'Forgot Password?',
-                          style: TextStyle(
-                            color: Color(0xFF7B7B7B),
-                            fontSize: 14,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: _rememberMe,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _rememberMe = value ?? false;
+                                  });
+                                },
+                                activeColor: Color(0xFF181C70),
+                              ),
+                              const Text(
+                                'Remember Me',
+                                style: TextStyle(
+                                  color: Color(0xFF7B7B7B),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              Get.to(() => const ForgotPasswordScreen());
+                            },
+                            style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
+                            child: const Text(
+                              'Forgot Password?',
+                              style: TextStyle(
+                                color: Color(0xFF7B7B7B),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     SizedBox(

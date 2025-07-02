@@ -138,7 +138,6 @@ class UserService {
         await prefs.setString('logged_in_name', empName);
         await prefs.setString('logged_in_password', password);
         await prefs.setString('arrival', user['arrival']?.toString() ?? '0');
-        await prefs.setInt('loadsheet', int.tryParse(user['loadsheet']?.toString() ?? '0') ?? 0);
         
         print('Login successful for user: $empName ($empCode)');
         return true;
@@ -173,6 +172,7 @@ class UserService {
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    await prefs.setBool('remember_me', false);
   }
 
 

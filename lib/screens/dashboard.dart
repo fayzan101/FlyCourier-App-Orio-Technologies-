@@ -140,8 +140,6 @@ class DashboardScreen extends StatelessWidget {
                       crossAxisSpacing: 20,
                       childAspectRatio: 1.15,
                       children: [
-                        if (cardController.showLoadsheet.value)
-                          _DashboardCard(icon: Icons.assignment, label: 'Loadsheet'),
                         if (cardController.showPickup.value)
                           GestureDetector(
                             onTap: () {

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardCardController extends GetxController {
-  var showLoadsheet = false.obs;
   var showManifest = false.obs;
   var showDeManifest = false.obs;
   var showCreateSheet = false.obs;
@@ -36,15 +35,14 @@ class DashboardCardController extends GetxController {
 
   Future<void> fetchFlags() async {
     final prefs = await SharedPreferences.getInstance();
-    showLoadsheet.value = (prefs.getInt('loadsheet') ?? 0) == 1;
-    showManifest.value = (prefs.getInt('manifest') ?? 0) == 0;
-    showReport.value = (prefs.getInt('report') ?? 0) == 0;
-    showDeManifest.value = (prefs.getInt('de_manifest') ?? 0) == 0;
-    showCreateSheet.value = (prefs.getInt('create_sheet') ?? 0) == 0;
-    showDelivery.value = (prefs.getInt('delivery') ?? 0) == 0;
+    showManifest.value = (prefs.getInt('manifest') ?? 0) == 1;
+    showReport.value = (prefs.getInt('report') ?? 0) == 1;
+    showDeManifest.value = (prefs.getInt('de_manifest') ?? 0) == 1;
+    showCreateSheet.value = (prefs.getInt('create_sheet') ?? 0) == 1;
+    showDelivery.value = (prefs.getInt('delivery') ?? 0) == 1;
     showTracking.value = (prefs.getInt('tracking') ?? 0) == 1;
-    int arrival = int.tryParse(prefs.getString('arrival') ?? '0') ?? 0;
-    showPickup.value = arrival == 1;
+    showPickup.value = (prefs.getInt('loadsheet') ?? 0) == 1;
+    int arrival = int.tryParse(prefs.getString('arrival') ?? '0') ?? 1;
     showArrival.value = arrival == 1;
   }
 } 

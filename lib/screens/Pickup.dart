@@ -28,7 +28,6 @@ class PickupScreen extends StatefulWidget {
 
 class _PickupScreenState extends State<PickupScreen> {
   String userName = '';
-  final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   List<PickupItem> _pickupList = [];
   bool _selectAll = false;
@@ -63,65 +62,6 @@ class _PickupScreenState extends State<PickupScreen> {
         Get.offAll(() => const LoginScreen());
       },
     ));
-  }
-
-  void _addPickup() async {
-    final trackingNumber = _pickupController.text.trim();
-    if (trackingNumber.isNotEmpty && !_pickupList.any((item) => item.parcel.trackingNumber == trackingNumber)) {
-      // Show loading indicator
-      setState(() {
-        // You can add a loading state here if needed
-      });
-      
-      try {
-        // Fetch parcel details from API
-        final parcel = await ParcelService.getParcelByTrackingNumber(trackingNumber);
-        
-        if (parcel != null) {
-          setState(() {
-            _pickupList.add(PickupItem(parcel: parcel));
-            _pickupController.clear();
-          });
-          FocusScope.of(context).unfocus();
-          
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Parcel added successfully: ${parcel.recipientName}'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        } else {
-          // Show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Parcel not found. Please check the tracking number.'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      } catch (e) {
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error adding parcel: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } else if (_pickupList.any((item) => item.parcel.trackingNumber == trackingNumber)) {
-      // Show error if parcel already exists
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('This parcel is already in the list.'),
-          backgroundColor: Colors.orange,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   void _toggleSelectAll() {
@@ -278,15 +218,28 @@ class _PickupScreenState extends State<PickupScreen> {
     );
   }
 
-  void _openQrScanner() async {
-    final result = await Get.to(() => QrScannerScreen(
-      validIds: {},
-      onScanSuccess: (trackingNumber) {
-        setState(() {
-          _pickupController.text = trackingNumber;
-        });
-      },
-    ));
+  void _startContinuousScan() async {
+    final scannedNumbers = <String>{};
+    bool continueScanning = true;
+    while (continueScanning && mounted) {
+      final result = await Get.to(() => QrScannerScreen(
+        validIds: scannedNumbers,
+        onScanSuccess: (trackingNumber) {
+          scannedNumbers.add(trackingNumber);
+        },
+      ));
+      if (result != null && result is String && !scannedNumbers.contains(result)) {
+        // Fetch parcel details from API
+        final parcel = await ParcelService.getParcelByTrackingNumber(result);
+        if (parcel != null && !_pickupList.any((item) => item.parcel.trackingNumber == result)) {
+          setState(() {
+            _pickupList.add(PickupItem(parcel: parcel));
+          });
+        }
+      }
+      // Only scan once per tap, do not loop
+      continueScanning = false;
+    }
   }
 
   List<PickupItem> get _filteredPickupList {
@@ -333,77 +286,31 @@ class _PickupScreenState extends State<PickupScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                // Enter Pickup Number
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _pickupController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: 'Enter Pickup Number',
-                          filled: true,
-                          fillColor: const Color(0xFFF3F3F3),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                        ),
-                      ),
+                // Click to Scan styled box
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: _startContinuousScan,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F3F3),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 40,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD9D9D9),
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Click to Scan',
+                          style: TextStyle(
+                            color: Color(0xFF7B7B7B),
+                            fontSize: 15,
                           ),
                         ),
-                        onPressed: _addPickup,
-                        child: const Text('Add'),
-                      ),
+                        const Spacer(),
+                        const Icon(Icons.qr_code_2, color: Color(0xFF18136E)),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Click to Scan
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        enabled: false,
-                        decoration: InputDecoration(
-                          hintText: 'Click to Scan',
-                          filled: true,
-                          fillColor: const Color(0xFFF3F3F3),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD9D9D9),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(6),
-                        onTap: _openQrScanner,
-                        child: const Icon(Icons.qr_code_2, color: Colors.black),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 // Search

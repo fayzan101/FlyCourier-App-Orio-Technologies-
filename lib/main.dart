@@ -6,6 +6,7 @@ import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard.dart';
 import 'services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,8 +54,10 @@ class _SplashToLoginState extends State<SplashToLogin> {
   void _checkLoginStatus() async {
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      final rememberMe = prefs.getBool('remember_me') ?? false;
       final isLoggedIn = await UserService.isLoggedIn();
-      if (isLoggedIn) {
+      if (rememberMe && isLoggedIn) {
         Get.offAll(() => DashboardScreen());
       } else {
         Get.offAll(() => const LoginScreen());

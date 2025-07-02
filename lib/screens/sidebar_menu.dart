@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
+import 'profile_screen.dart';
 
 class SidebarScreen extends StatelessWidget {
   final String userName;
@@ -88,15 +90,22 @@ class SidebarScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.person, color: darkBlue),
                   title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
-                  onTap: onProfile,
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      Get.to(() => ProfileScreen());
+                    });
+                  },
                   contentPadding: EdgeInsets.zero,
                 ),
+                const SizedBox(height: 12),
                 ListTile(
                   leading: const Icon(Icons.lock_outline, color: darkBlue),
                   title: Text('Reset Password', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
                   onTap: onResetPassword,
                   contentPadding: EdgeInsets.zero,
                 ),
+                const SizedBox(height: 12),
                 ListTile(
                   leading: const Icon(Icons.logout, color: darkBlue),
                   title: Text('Logout', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
