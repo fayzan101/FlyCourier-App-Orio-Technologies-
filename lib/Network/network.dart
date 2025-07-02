@@ -1,8 +1,5 @@
 import 'dart:developer';
 import 'package:dio/dio.dart' as dio;
-import 'package:get/get.dart';
-import '../services/user_service.dart';
-import '../screens/login_screen.dart';
 
 class Network {
   static dio.Response? response;
@@ -19,11 +16,6 @@ class Network {
         options: dio.Options(headers: header),
         data: data,
       );
-      if (response?.statusCode == 401) {
-        await UserService.logout();
-        Get.offAll(() => const LoginScreen());
-        return null;
-      }
       log(response.toString());
       return response!.data;
     } on dio.DioException catch (e) {
