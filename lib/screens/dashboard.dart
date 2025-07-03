@@ -34,10 +34,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadUserName();
     
-    // Show login success snackbar only once
+    // Show login success snackbar only once, after first frame
     if (widget.showLoginSuccess && !_loginSnackbarShown) {
       _loginSnackbarShown = true;
-      Future.delayed(Duration(milliseconds: 300), () {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         customSnackBar('Success', 'Login successful!');
       });
     }
@@ -339,7 +339,7 @@ class _FlyCourierBranding extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Padding(
-              padding: const EdgeInsets.only(left: 18),
+              padding: const EdgeInsets.only(left: 19),
               child: Container(
                 height: 2,
                 width: 80,
