@@ -126,30 +126,37 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   void _onQRViewCreated(QRViewController ctrl) {
     controller = ctrl;
     ctrl.scannedDataStream.listen((scanData) async {
-      if (scannedId != scanData.code && !isLoading) {
+      // Normalize function to avoid case/whitespace duplicates
+      String normalized(String? s) => (s ?? '').trim().toLowerCase();
+      final code = scanData.code;
+      final normalizedCode = normalized(code);
+      if (scannedId != code && !isLoading) {
         setState(() {
-          scannedId = scanData.code;
+          scannedId = code;
           isLoading = true;
         });
-        if (scanData.code != null) {
-          if (scannedIds.contains(scanData.code!.toString())) {
+        if (code != null) {
+          if (scannedIds.any((id) => normalized(id) == normalizedCode)) {
             _showMessage(success: false, error: 'Already scanned');
             setState(() {
               scannedParcel = null;
               isLoading = false;
             });
+            // Resume camera after short delay for next scan
+            await Future.delayed(const Duration(milliseconds: 700));
+            controller?.resumeCamera();
             return;
           }
           try {
-            final parcel = await ParcelService.getParcelByTrackingNumber(scanData.code!.toString());
+            final parcel = await ParcelService.getParcelByTrackingNumber(code);
             if (parcel != null) {
               setState(() {
                 scannedParcel = parcel;
                 isLoading = false;
-                scannedIds.add(scanData.code!.toString());
+                scannedIds.add(code);
               });
               _showMessage(success: true);
-              widget.onScanSuccess(scanData.code!);
+              widget.onScanSuccess(code);
             } else {
               _showMessage(success: false, error: 'Invalid tracking number');
               setState(() {
@@ -165,6 +172,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               isLoading = false;
             });
           }
+          // Resume camera after short delay for next scan
+          await Future.delayed(const Duration(milliseconds: 700));
+          controller?.resumeCamera();
         }
       }
     });
