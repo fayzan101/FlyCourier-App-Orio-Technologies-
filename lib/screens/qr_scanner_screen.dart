@@ -33,6 +33,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   String userName = 'Loading...';
   ParcelModel? scannedParcel;
   bool isLoading = false;
+  bool _isLoadingUserName = true;
   late Set<String> scannedIds;
   Timer? _messageTimer;
 
@@ -47,24 +48,47 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     scannedIds = Set<String>.from(widget.validIds);
   }
 
-  void _loadUserName() async {
-    final userInfo = await UserService.getUserInfo();
-    if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty && mounted) {
-      setState(() {
-        userName = userInfo['emp_name']!;
-      });
-    } else {
-      // Fallback to UserModel if getUserInfo doesn't work
-      final user = await UserService.getUser();
-      if (user != null && mounted) {
+  Future<void> _loadUserName() async {
+    if (!_isLoadingUserName) return; // Prevent multiple calls
+    
+    try {
+      final userInfo = await UserService.getUserInfo();
+      if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty && mounted) {
         setState(() {
-          userName = user.fullName;
+          userName = userInfo['emp_name']!;
+          _isLoadingUserName = false;
+        });
+      } else {
+        // Fallback to UserModel if getUserInfo doesn't work
+        final user = await UserService.getUser();
+        if (user != null && mounted) {
+          setState(() {
+            userName = user.fullName;
+            _isLoadingUserName = false;
+          });
+        } else if (mounted) {
+          setState(() {
+            userName = 'User';
+            _isLoadingUserName = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          userName = 'User';
+          _isLoadingUserName = false;
         });
       }
     }
   }
 
-  void _showSidebar() {
+  void _showSidebar() async {
+    // If username is still loading, try to load it now
+    if (_isLoadingUserName) {
+      await _loadUserName();
+    }
+    
     Get.to(() => SidebarScreen(
       userName: userName,
       onProfile: () {
@@ -384,4 +408,4 @@ class _ScannerOverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-} 
+}
