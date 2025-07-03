@@ -33,6 +33,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadUserName();
+    
+    // Show login success snackbar only once
+    if (widget.showLoginSuccess && !_loginSnackbarShown) {
+      _loginSnackbarShown = true;
+      Future.delayed(Duration(milliseconds: 300), () {
+        customSnackBar('Success', 'Login successful!');
+      });
+    }
   }
 
   void _loadUserName() async {
@@ -56,9 +64,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       userName: userName,
       onLogout: () => _showLogoutDialog(context),
       onResetPassword: () {
+        Get.back();
         Get.to(() => const ForgotPasswordScreen());
       },
       onProfile: () {
+        Get.back();
         Get.to(() => const ProfileScreen());
       },
     ));
@@ -93,12 +103,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.showLoginSuccess && !_loginSnackbarShown) {
-      _loginSnackbarShown = true;
-      Future.delayed(Duration(milliseconds: 300), () {
-        customSnackBar('Success', 'Login successful!');
-      });
-    }
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,

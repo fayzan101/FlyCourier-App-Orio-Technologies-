@@ -16,6 +16,8 @@ class UserService {
   static const String _empNameKey = 'emp_name';
   static const String _stationNameKey = 'station_name';
   static const String _userInfoKey = 'user_info';
+  static const String _emailKey = 'email';
+  static const String _passwordKey = 'password';
   
   
 
@@ -50,17 +52,44 @@ class UserService {
     return null;
   }
 
+  // Get credentials for API calls
+  static Future<Map<String, String?>> getCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString(_emailKey)?.trim();
+    final password = prefs.getString(_passwordKey)?.trim();
+    return {
+      'email': email,
+      'password': password,
+    };
+  }
+
+  // Get authorization header for API calls
+  static Future<String?> getAuthorizationHeader() async {
+    final credentials = await getCredentials();
+    final email = credentials['email'];
+    final password = credentials['password'];
+    
+    if (email != null && password != null && email.isNotEmpty && password.isNotEmpty) {
+      return '$email:$password';
+    }
+    return null;
+  }
+
   // Validate login credentials with API
   static Future<bool> validateLoginWithAPI(String email, String password) async {
     final url = 'https://thegoexpress.com/api/app_login';
     try {
+      // Trim email and password
+      final trimmedEmail = email.trim();
+      final trimmedPassword = password.trim();
+      
       final headers = {
         'Content-Type': 'application/json',
-        'Authorization': '$email:$password',
+        'Authorization': '$trimmedEmail:$trimmedPassword',
       };
       final data = jsonEncode({
-        'email': email,
-        'password': password,
+        'email': trimmedEmail,
+        'password': trimmedPassword,
       });
       
       final responseData = await Network.postApi(url, data, headers);
@@ -68,8 +97,8 @@ class UserService {
       
       // Temporary debugging for correct credentials
       print('=== DEBUG LOGIN ===');
-      print('Email provided: $email');
-      print('Password provided: $password');
+      print('Email provided: $trimmedEmail');
+      print('Password provided: $trimmedPassword');
       print('API Response: $json');
       
       // Check if response is null or invalid
@@ -122,9 +151,9 @@ class UserService {
         
         // For now, let's be more lenient with email validation
         // Only check email if it's actually returned by the API
-        if (returnedEmail.isNotEmpty && returnedEmail.toLowerCase() != email.toLowerCase()) {
+        if (returnedEmail.isNotEmpty && returnedEmail.toLowerCase() != trimmedEmail.toLowerCase()) {
           print('Login failed: Email mismatch - API returned different user');
-          print('Provided: $email, Returned: $returnedEmail');
+          print('Provided: $trimmedEmail, Returned: $returnedEmail');
           return false;
         }
         
@@ -136,8 +165,11 @@ class UserService {
         await prefs.setString('user_info', jsonEncode(user));
         await prefs.setBool('is_logged_in', true);
         await prefs.setString('logged_in_name', empName);
-        await prefs.setString('logged_in_password', password);
+        await prefs.setString('logged_in_password', trimmedPassword);
         await prefs.setString('arrival', user['arrival']?.toString() ?? '0');
+        // Save email for future API calls
+        await prefs.setString(_emailKey, trimmedEmail);
+        await prefs.setString(_passwordKey, trimmedPassword);
         
         print('Login successful for user: $empName ($empCode)');
         return true;

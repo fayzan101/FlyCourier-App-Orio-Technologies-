@@ -115,10 +115,13 @@ class _LoginScreenState extends State<LoginScreen> {
         statusBarColor: Colors.white,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light, // For iOS
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
+          bottom: true,
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 28),

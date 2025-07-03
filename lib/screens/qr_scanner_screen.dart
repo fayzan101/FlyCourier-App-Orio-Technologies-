@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import '../services/user_service.dart';
 import '../services/parcel_service.dart';
 import '../models/parcel_model.dart';
 import 'sidebar_menu.dart';
+import 'profile_screen.dart';
+import 'forgot_password.dart';
+import 'login_screen.dart';
 import 'dart:async';
 
 class QrScannerScreen extends StatefulWidget {
@@ -26,7 +30,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   bool showSuccess = false;
   bool showError = false;
   String? errorMessage;
-  String userName = '';
+  String userName = 'Loading...';
   ParcelModel? scannedParcel;
   bool isLoading = false;
   late Set<String> scannedIds;
@@ -44,32 +48,38 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   }
 
   void _loadUserName() async {
-    final user = await UserService.getUser();
-    if (user != null && mounted) {
+    final userInfo = await UserService.getUserInfo();
+    if (userInfo['emp_name'] != null && userInfo['emp_name']!.isNotEmpty && mounted) {
       setState(() {
-        userName = user.fullName;
+        userName = userInfo['emp_name']!;
       });
+    } else {
+      // Fallback to UserModel if getUserInfo doesn't work
+      final user = await UserService.getUser();
+      if (user != null && mounted) {
+        setState(() {
+          userName = user.fullName;
+        });
+      }
     }
   }
 
   void _showSidebar() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SidebarScreen(
-          userName: userName,
-          onProfile: () {
-            Navigator.of(context).pushNamed('/profile');
-          },
-          onResetPassword: () {
-            Navigator.of(context).pushNamed('/forgot_password');
-          },
-          onLogout: () async {
-            await UserService.logout();
-            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-          },
-        ),
-      ),
-    );
+    Get.to(() => SidebarScreen(
+      userName: userName,
+      onProfile: () {
+        Get.back();
+        Get.to(() => const ProfileScreen());
+      },
+      onResetPassword: () {
+        Get.back();
+        Get.to(() => const ForgotPasswordScreen());
+      },
+      onLogout: () async {
+        await UserService.logout();
+        Get.offAll(() => const LoginScreen());
+      },
+    ));
   }
 
   @override

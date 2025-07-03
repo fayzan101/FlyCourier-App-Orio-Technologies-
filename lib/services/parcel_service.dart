@@ -1,23 +1,35 @@
 import 'package:dio/dio.dart';
 import '../models/parcel_model.dart';
+import '../services/user_service.dart';
 
 class ParcelService {
   static Future<ParcelModel?> getParcelByTrackingNumber(String trackingNumber) async {
     final dio = Dio();
     const url = 'https://thegoexpress.com/api/loadsheet_by_cn';
-    final headers = {
-      'Authorization': 'zainKhan:demo@1234',
-      'Content-Type': 'application/json',
-    };
+    
     try {
+      // Get authorization header from saved credentials
+      final authHeader = await UserService.getAuthorizationHeader();
+      if (authHeader == null) {
+        print('Error: No saved credentials found. Please login again.');
+        return null;
+      }
+      
+      final headers = {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      };
+      
       final trimmedTrackingNumber = trackingNumber.toString().trim();
-      print('Tracking number sent to API: "' + trimmedTrackingNumber + '"');
+      print('Tracking number sent to API: "$trimmedTrackingNumber"');
+      print('Using authorization: $authHeader');
+      
       final response = await dio.post(
         url,
         data: {'shipment_no': trimmedTrackingNumber},
         options: Options(headers: headers),
       );
-      print('API response: \\n${response.data}');
+      print('API response: \n${response.data}');
       if (response.statusCode == 200 && response.data['status'] == 1) {
         final body = response.data['data']['body'];
         if (body is List && body.isNotEmpty) {
@@ -50,14 +62,27 @@ class ParcelService {
   static Future<Response?> createLoadsheet(String shipmentNo) async {
     final dio = Dio();
     const url = 'https://thegoexpress.com/api/create_loadsheet';
-    final headers = {
-      'Authorization': 'zainKhan:demo@1234',
-      'Content-Type': 'application/json',
-    };
+    
     try {
+      // Get authorization header from saved credentials
+      final authHeader = await UserService.getAuthorizationHeader();
+      if (authHeader == null) {
+        print('Error: No saved credentials found. Please login again.');
+        return null;
+      }
+      
+      final headers = {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      };
+      
+      final trimmedShipmentNo = shipmentNo.trim();
+      print('Creating loadsheet for shipment: "$trimmedShipmentNo"');
+      print('Using authorization: $authHeader');
+      
       final response = await dio.post(
         url,
-        data: {'shipment_no': shipmentNo},
+        data: {'shipment_no': trimmedShipmentNo},
         options: Options(headers: headers),
       );
       return response;

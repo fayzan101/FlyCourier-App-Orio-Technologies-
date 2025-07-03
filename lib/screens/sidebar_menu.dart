@@ -102,10 +102,7 @@ class SidebarScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.person, color: darkBlue),
                   title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
-                  onTap: () {
-                    Get.back();
-                    Get.to(() => ProfileScreen());
-                  },
+                  onTap: onProfile,
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 12),
