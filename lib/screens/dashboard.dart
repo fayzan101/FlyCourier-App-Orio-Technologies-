@@ -297,19 +297,18 @@ class _FlyCourierBranding extends StatelessWidget {
       children: [
         // Main title - centered with respect to subtitle
         Padding(
-          padding: const EdgeInsets.only(left: 9.0),
+          padding: const EdgeInsets.only(left: 10.0),
           child: Text(
-            'FLY Courier',
-            style: TextStyle(
-              color: Color(0xFF18136E),
-              fontWeight: FontWeight.w900,
-              fontSize: 16,
-              letterSpacing: 1.2,
-              fontFamily: 'Arial',
-              height: 1.0,
-            ),
-          ),
-        ),
+  'FLY Courier',
+  style: GoogleFonts.montserrat(
+    color: const Color(0xFF18136E),
+    fontWeight: FontWeight.w900,
+    fontSize: 16,
+    letterSpacing: 1.0,
+    height: 1.0,
+  ),
+),
+),
         // Subtitle positioned right below
         Padding(
           padding: const EdgeInsets.only(left: 5.0),
@@ -318,7 +317,7 @@ class _FlyCourierBranding extends StatelessWidget {
             style: TextStyle(
               color: Color(0xFF18136E),
               fontStyle: FontStyle.italic,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w400,
               fontFamily: 'Arial',
               height: 1.0,
@@ -334,16 +333,16 @@ class _FlyCourierBranding extends StatelessWidget {
               padding: const EdgeInsets.only(left: 5.0),
               child: Container(
                 height: 2,
-                width: 100,
+                width: 120,
                 color: Colors.lightBlue,
               ),
             ),
             const SizedBox(height: 2),
             Padding(
-              padding: const EdgeInsets.only(left: 16),
+              padding: const EdgeInsets.only(left: 18),
               child: Container(
                 height: 2,
-                width: 70,
+                width: 80,
                 color: Colors.lightBlue,
               ),
             ),

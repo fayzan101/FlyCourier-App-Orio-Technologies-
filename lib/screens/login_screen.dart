@@ -5,6 +5,7 @@ import 'create_account.dart';
 import 'dashboard.dart';
 import '../services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Utils/Colors/color_resources.dart';
 import 'package:get/get.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -110,6 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.white,
@@ -264,11 +266,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                                 activeColor: Color(0xFF181C70),
                               ),
-                              const Text(
+                              Text(
                                 'Remember Me',
                                 style: TextStyle(
-                                  color: Color(0xFF7B7B7B),
-                                  fontSize: 12,
+                                  color: ColorResources.blackColor,
+                                  fontSize: mediaQuery.size.width * 0.03,
                                 ),
                               ),
                             ],
@@ -281,11 +283,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               Get.to(() => const ForgotPasswordScreen());
                             },
                             style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
-                            child: const Text(
+                            child: Text(
                               'Forgot Password?',
                               style: TextStyle(
-                                color: Color(0xFF7B7B7B),
-                                fontSize: 14,
+                                color: ColorResources.blackColor,
+                                fontSize: mediaQuery.size.width * 0.03,
                               ),
                             ),
                           ),

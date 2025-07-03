@@ -51,9 +51,10 @@ class _SplashScreenState extends State<SplashScreen> {
                     fontSize: 36,
                     color: Colors.white,
                     letterSpacing: 1.2,
+                    height:1.0,
                   ),
                 ),
-                const SizedBox(height: 4),
+                
                 Text(
                 'Success Driven',
                 style: TextStyle(
@@ -62,6 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   color: Colors.white70,
                   fontWeight: FontWeight.w400,
                   fontFamily: 'Serif',
+                  height:1.0,
                 ),
               ),
                 const SizedBox(height: 16),
