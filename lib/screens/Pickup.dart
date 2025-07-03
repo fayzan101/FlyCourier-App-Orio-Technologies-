@@ -424,8 +424,8 @@ class _PickupScreenState extends State<PickupScreen> {
                                         },
                                       ),
                                       title: Text(
-                                        'Pickup ID: ${item.parcel.shipmentNo}',
-                                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                                        'CN No: ${item.parcel.shipmentNo}',
+                                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13),
                                       ),
                                       trailing: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -521,17 +521,17 @@ class _PickupScreenState extends State<PickupScreen> {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 110,
             child: Text(
               '$label:',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
+                fontSize: 12,
                 color: Colors.black87,
               ),
             ),
@@ -540,7 +540,7 @@ class _PickupScreenState extends State<PickupScreen> {
             child: Text(
               value,
               style: GoogleFonts.poppins(
-                fontSize: 13,
+                fontSize: 12,
                 color: Colors.black54,
               ),
               textAlign: TextAlign.left,

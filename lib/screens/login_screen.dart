@@ -324,64 +324,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                       ),
                     ),
-
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Divider(
-                            color: Color(0xFFE0E0E0),
-                            thickness: 1,
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'or',
-                            style: TextStyle(
-                              color: Color(0xFF7B7B7B),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        const Expanded(
-                          child: Divider(
-                            color: Color(0xFFE0E0E0),
-                            thickness: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Don't have an account? ",
-                          style: TextStyle(
-                            color: Color(0xFF7B7B7B),
-                            fontSize: 14,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const CreateAccountScreen()),
-                            );
-                          },
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
-                          child: const Text(
-                            'Sign up',
-                            style: TextStyle(
-                              color: Color(0xFF181C70),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
