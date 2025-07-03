@@ -52,7 +52,7 @@ class _SplashToLoginState extends State<SplashToLogin> {
   }
 
   void _checkLoginStatus() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 4));
     if (mounted) {
       final prefs = await SharedPreferences.getInstance();
       final rememberMe = prefs.getBool('remember_me') ?? false;

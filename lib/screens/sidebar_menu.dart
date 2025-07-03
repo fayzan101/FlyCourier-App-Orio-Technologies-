@@ -46,7 +46,7 @@ class SidebarScreen extends StatelessWidget {
         body: SafeArea(
           bottom: true,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -102,7 +102,7 @@ class SidebarScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     const Divider(),
                     ListTile(
                       leading: const Icon(Icons.person, color: darkBlue),
