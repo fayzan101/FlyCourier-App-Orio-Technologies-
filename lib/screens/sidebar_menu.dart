@@ -44,86 +44,99 @@ class SidebarScreen extends StatelessWidget {
           ],
         ),
         body: SafeArea(
-          bottom: false,
+          bottom: true,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
+                // Top content
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F3F3),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: const Icon(Icons.person, color: darkBlue, size: 32),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        userName.isEmpty || userName == 'Loading...'
-                          ? Row(
-                              children: [
-                                SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F3F3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          child: const Icon(Icons.person, color: darkBlue, size: 32),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            userName.isEmpty || userName == 'Loading...'
+                              ? Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text('Loading...', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18, color: darkBlue)),
+                                  ],
+                                )
+                              : Text(
+                                  'Hi, $userName',
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: darkBlue,
+                                  ),
                                 ),
-                                SizedBox(width: 8),
-                                Text('Loading...', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18, color: darkBlue)),
-                              ],
-                            )
-                          : Text(
-                              'Hi, $userName',
+                            const SizedBox(height: 2),
+                            Text(
+                              'Good Morning',
                               style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: darkBlue,
+                                color: Colors.black54,
+                                fontSize: 14,
                               ),
                             ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Good Morning',
-                          style: GoogleFonts.poppins(
-                            color: Colors.black54,
-                            fontSize: 14,
-                          ),
+                          ],
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.person, color: darkBlue),
+                      title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                      onTap: onProfile,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      leading: const Icon(Icons.lock_outline, color: darkBlue),
+                      title: Text('Reset Password', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                      onTap: onResetPassword,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      leading: const Icon(Icons.logout, color: darkBlue),
+                      title: Text('Logout', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                      onTap: onLogout,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.person, color: darkBlue),
-                  title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
-                  onTap: onProfile,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 12),
-                ListTile(
-                  leading: const Icon(Icons.lock_outline, color: darkBlue),
-                  title: Text('Reset Password', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
-                  onTap: onResetPassword,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 12),
-                ListTile(
-                  leading: const Icon(Icons.logout, color: darkBlue),
-                  title: Text('Logout', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
-                  onTap: onLogout,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                const Spacer(),
-                Center(
-                  child: Text(
-                    'App Version - V2.00',
-                    style: GoogleFonts.poppins(color: Colors.black54, fontSize: 13),
+                // Bottom app version text
+                SafeArea(
+                  top: false,
+                  left: false,
+                  right: false,
+                  bottom: true,
+                  child: Center(
+                    child: Text(
+                      'App Version - V2.00',
+                      style: GoogleFonts.poppins(color: Colors.black54, fontSize: 13),
+                    ),
                   ),
                 ),
               ],
