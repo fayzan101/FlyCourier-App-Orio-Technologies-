@@ -15,6 +15,8 @@ import '../Utils/Colors/color_resources.dart';
 import '../Utils/custom_snackbar.dart';
 import 'dart:async';
 import '../controllers/dashboard_card_controller.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/poppins_text.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool showLoginSuccess;
@@ -140,7 +142,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       'Dashboard',
                       style: GoogleFonts.poppins(
                         color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                        
                         fontSize: 22,
                       ),
                     ),
@@ -339,7 +341,7 @@ class _FlyCourierBranding extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Padding(
-              padding: const EdgeInsets.only(left: 19),
+              padding: const EdgeInsets.only(left: 20),
               child: Container(
                 height: 2,
                 width: 80,

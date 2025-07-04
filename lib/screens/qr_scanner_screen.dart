@@ -15,9 +15,10 @@ import 'dart:async';
 class QrScannerScreen extends StatefulWidget {
   final Set<String> validIds;
   final void Function(String id) onScanSuccess;
+  final Set<String> alreadySubmittedIds;
   static final GlobalKey<_QrScannerScreenState> scannerKey = GlobalKey<_QrScannerScreenState>();
 
-  const QrScannerScreen({Key? key, required this.validIds, required this.onScanSuccess}) : super(key: key);
+  const QrScannerScreen({Key? key, required this.validIds, required this.onScanSuccess, required this.alreadySubmittedIds}) : super(key: key);
 
   @override
   State<QrScannerScreen> createState() => _QrScannerScreenState();
@@ -126,29 +127,49 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   void _onQRViewCreated(QRViewController ctrl) {
     controller = ctrl;
     ctrl.scannedDataStream.listen((scanData) async {
-      // Normalize function to avoid case/whitespace duplicates
       String normalized(String? s) => (s ?? '').trim().toLowerCase();
       final code = scanData.code;
       final normalizedCode = normalized(code);
-      if (scannedId != code && !isLoading) {
+      if (!isLoading) {
+        // Check if code is already submitted
+        if (widget.alreadySubmittedIds.contains(normalizedCode)) {
+          setState(() {
+            showSuccess = false;
+            showError = false;
+            isLoading = false;
+            scannedParcel = null;
+          });
+          _showMessage(success: false, error: 'Shipment No is already exist in loadsheet');
+          await Future.delayed(const Duration(milliseconds: 700));
+          controller?.resumeCamera();
+          return;
+        }
+        // If already scanned, show message and return immediately
+        if (scannedIds.any((id) => normalized(id) == normalizedCode)) {
+          setState(() {
+            showSuccess = false;
+            showError = false;
+            isLoading = false;
+            scannedParcel = null;
+          });
+          _showMessage(success: false, error: 'Already scanned');
+          await Future.delayed(const Duration(milliseconds: 700));
+          controller?.resumeCamera();
+          return;
+        }
         setState(() {
           scannedId = code;
           isLoading = true;
+          showSuccess = false;
+          showError = false;
         });
+        _showMessage(success: false, error: 'Searching parcel...');
         if (code != null) {
-          if (scannedIds.any((id) => normalized(id) == normalizedCode)) {
-            _showMessage(success: false, error: 'Already scanned');
-            setState(() {
-              scannedParcel = null;
-              isLoading = false;
-            });
-            // Resume camera after short delay for next scan
-            await Future.delayed(const Duration(milliseconds: 700));
-            controller?.resumeCamera();
-            return;
-          }
           try {
-            final parcel = await ParcelService.getParcelByTrackingNumber(code);
+            final result = await ParcelService.getParcelByTrackingNumberWithResponse(code);
+            final parcel = result['parcel'];
+            final response = result['response'];
+            print('API response in scanner: \\${response?.data}');
             if (parcel != null) {
               setState(() {
                 scannedParcel = parcel;
@@ -158,11 +179,29 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               _showMessage(success: true);
               widget.onScanSuccess(code);
             } else {
-              _showMessage(success: false, error: 'Invalid tracking number');
-              setState(() {
-                scannedParcel = null;
-                isLoading = false;
-              });
+              // Check for 'already exist' in API response body (robust)
+              final bodyMsg = (response != null && response.data != null)
+                  ? (response.data['data'] != null && response.data['data']['body'] != null
+                      ? response.data['data']['body'].toString().toLowerCase().trim()
+                      : null)
+                  : null;
+              print('bodyMsg: "$bodyMsg"');
+              if (response?.data != null && response.data['status'] == 0 && bodyMsg != null && (bodyMsg.contains('already exist') || bodyMsg.contains('exist in loadsheet'))) {
+                print('Detected already exist in body: $bodyMsg');
+                widget.alreadySubmittedIds.add(normalizedCode);
+                setState(() {
+                  isLoading = false;
+                  scannedParcel = null;
+                });
+                _showMessage(success: false, error: 'Shipment No is already exist in loadsheet');
+              } else {
+                print('No already exist detected, showing invalid tracking number.');
+                setState(() {
+                  isLoading = false;
+                  scannedParcel = null;
+                });
+                _showMessage(success: false, error: 'Invalid tracking number');
+              }
             }
           } catch (e) {
             setState(() {
@@ -172,7 +211,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               isLoading = false;
             });
           }
-          // Resume camera after short delay for next scan
           await Future.delayed(const Duration(milliseconds: 700));
           controller?.resumeCamera();
         }

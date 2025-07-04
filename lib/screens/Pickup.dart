@@ -34,6 +34,7 @@ class _PickupScreenState extends State<PickupScreen> {
   bool _selectAll = false;
   String _searchQuery = '';
   String? _selectedShipmentNo;
+  final Set<String> alreadySubmittedIds = {};
 
   @override
   void initState() {
@@ -260,12 +261,14 @@ class _PickupScreenState extends State<PickupScreen> {
       validIds: scannedNumbers,
       onScanSuccess: (trackingNumber) async {
         if (!cardController.pickupList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
-          final parcel = await ParcelService.getParcelByTrackingNumber(trackingNumber);
+          final result = await ParcelService.getParcelByTrackingNumberWithResponse(trackingNumber);
+          final parcel = result['parcel'];
           if (parcel != null) {
             cardController.pickupList.add(PickupItem(parcel: parcel));
           }
         }
       },
+      alreadySubmittedIds: alreadySubmittedIds,
     ));
   }
 

@@ -11,6 +11,9 @@ import 'forgot_password.dart';
 import 'profile_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'package:get/get.dart';
+import '../widgets/detail_row.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/poppins_text.dart';
 
 class ShipmentItem {
   final ParcelModel parcel;
@@ -70,7 +73,8 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
     if (trackingNumber.isNotEmpty && !_shipmentList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
       try {
         // Fetch parcel details from API
-        final parcel = await ParcelService.getParcelByTrackingNumber(trackingNumber);
+        final result = await ParcelService.getParcelByTrackingNumberWithResponse(trackingNumber);
+        final parcel = result['parcel'];
         
         if (parcel != null) {
           setState(() {
@@ -276,11 +280,16 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
   void _openQrScanner() async {
     final result = await Get.to(() => QrScannerScreen(
       validIds: {},
-      onScanSuccess: (trackingNumber) {
-        setState(() {
-          _shipmentController.text = trackingNumber;
-        });
+      onScanSuccess: (trackingNumber) async {
+        final result = await ParcelService.getParcelByTrackingNumberWithResponse(trackingNumber);
+        final parcel = result['parcel'];
+        if (parcel != null) {
+          setState(() {
+            _shipmentController.text = trackingNumber;
+          });
+        }
       },
+      alreadySubmittedIds: <String>{},
     ));
   }
 
@@ -487,15 +496,10 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                                     style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16)),
                                 const Spacer(),
                                 if (hasSelected)
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red[100],
-                                      foregroundColor: Colors.red,
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    ),
+                                  CustomButton(
+                                    text: 'Delete',
                                     onPressed: _showDeleteDialog,
-                                    child: const Text('Delete'),
+                                    type: ButtonType.danger,
                                   ),
                               ],
                             ),
@@ -559,20 +563,20 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  _buildDetailRow('Recipient', item.parcel.consigneeName),
-                                                  _buildDetailRow('Phone', item.parcel.consigneeContact),
-                                                  _buildDetailRow('Address', item.parcel.consigneeAddress),
+                                                  DetailRow(label: 'Recipient', value: item.parcel.consigneeName),
+                                                  DetailRow(label: 'Phone', value: item.parcel.consigneeContact),
+                                                  DetailRow(label: 'Address', value: item.parcel.consigneeAddress),
                                                   const Divider(height: 16),
-                                                  _buildDetailRow('Sender', item.parcel.createdBy),
-                                                  _buildDetailRow('Weight', item.parcel.weight),
-                                                  _buildDetailRow('Product Detail', item.parcel.productDetail),
-                                                  _buildDetailRow('Destination City', item.parcel.destinationCity),
-                                                  _buildDetailRow('Shipment Date', item.parcel.shipmentDate),
-                                                  _buildDetailRow('Cash Collect', item.parcel.cashCollect),
-                                                  _buildDetailRow('TPCN No', item.parcel.tpcnno),
-                                                  _buildDetailRow('TP Name', item.parcel.tpname),
-                                                  _buildDetailRow('Shipment Reference', item.parcel.shipmentReference),
-                                                  _buildDetailRow('Pieces', item.parcel.peices),
+                                                  DetailRow(label: 'Sender', value: item.parcel.createdBy),
+                                                  DetailRow(label: 'Weight', value: item.parcel.weight),
+                                                  DetailRow(label: 'Product Detail', value: item.parcel.productDetail),
+                                                  DetailRow(label: 'Destination City', value: item.parcel.destinationCity),
+                                                  DetailRow(label: 'Shipment Date', value: item.parcel.shipmentDate),
+                                                  DetailRow(label: 'Cash Collect', value: item.parcel.cashCollect),
+                                                  DetailRow(label: 'TPCN No', value: item.parcel.tpcnno),
+                                                  DetailRow(label: 'TP Name', value: item.parcel.tpname),
+                                                  DetailRow(label: 'Shipment Reference', value: item.parcel.shipmentReference),
+                                                  DetailRow(label: 'Pieces', value: item.parcel.peices),
                                                 ],
                                               ),
                                             ),
@@ -591,16 +595,10 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
                       top: false,
                       child: SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF18136E),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
+                        child: CustomButton(
+                          text: 'Submit',
                           onPressed: _showSuccessDialog,
-                          child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                          type: ButtonType.primary,
                         ),
                       ),
                     ),
@@ -609,38 +607,6 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: Colors.black54,
-              ),
-              textAlign: TextAlign.left,
-            ),
-          ),
-        ],
       ),
     );
   }

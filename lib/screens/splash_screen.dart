@@ -48,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   'FLY Courier',
                   style: GoogleFonts.montserrat(
                     fontWeight: FontWeight.w900,
-                    fontSize: 36,
+                    fontSize: 30,
                     color: Colors.white,
                     letterSpacing: 1.2,
                     height:1.0,
@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 'Success Driven',
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
-                  fontSize: 24,
+                  fontSize: 32,
                   color: Colors.white70,
                   fontWeight: FontWeight.w400,
                   fontFamily: 'Serif',
