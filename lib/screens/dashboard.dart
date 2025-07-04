@@ -142,7 +142,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       'Dashboard',
                       style: GoogleFonts.poppins(
                         color: Colors.black,
-                        
+                        fontWeight: FontWeight.w600,
                         fontSize: 22,
                       ),
                     ),
