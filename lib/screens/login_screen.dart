@@ -123,173 +123,210 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: SafeArea(
-          bottom: true,
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Form(
-                key: _formKey,
-                child: Center(
-                  child: SizedBox(
-                    width: 350,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 48),
-                        Text(
-                          'Sign In',
-                          textAlign: TextAlign.center,
-                          softWrap: true,
-                          overflow: TextOverflow.visible,
-                          style: GoogleFonts.montserrat(
-                            color: Colors.black,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          "and let's get those orders moving!",
-                          textAlign: TextAlign.center,
-                          softWrap: true,
-                          overflow: TextOverflow.visible,
-                          style: GoogleFonts.poppins(
-                            color: Color(0xFF888888),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        // Email field
-                        SizedBox(
-                          height: 52,
-                          child: TextFormField(
-                            controller: _emailController,
-                            style: GoogleFonts.poppins(color: Color(0xFF222222)),
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF222222)),
-                              hintText: 'Email',
-                              hintStyle: GoogleFonts.poppins(color: Color(0xFF222222)),
-                              filled: true,
-                              fillColor: Color(0xFFF3F3F3),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Colors.red, width: 2),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Colors.red, width: 2),
-                              ),
-                              border: _loginError
-                                  ? OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red, width: 2),
-                                    )
-                                  : OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
+        body: MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: SafeArea(
+            bottom: true,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Form(
+                  key: _formKey,
+                  child: Center(
+                    child: SizedBox(
+                      width: 350,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 48),
+                          Text(
+                            'Sign In',
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                            overflow: TextOverflow.visible,
+                            style: GoogleFonts.montserrat(
+                              color: Colors.black,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
                             ),
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
-                              }
-                              return null;
-                            },
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        // Password field
-                        SizedBox(
-                          height: 52,
-                          child: TextFormField(
-                            controller: _passwordController,
-                            style: GoogleFonts.poppins(color: Color(0xFF222222)),
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.lock_outline, color: Color(0xFF222222)),
-                              hintText: 'Password',
-                              hintStyle: GoogleFonts.poppins(color: Color(0xFF222222)),
-                              filled: true,
-                              fillColor: Color(0xFFF3F3F3),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Colors.red, width: 2),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Colors.red, width: 2),
-                              ),
-                              border: _loginError
-                                  ? OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red, width: 2),
-                                    )
-                                  : OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                              suffixIcon: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF222222).withOpacity(0.12),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                    color: Color(0xFF444444),
+                          const SizedBox(height: 12),
+                          Text(
+                            "and let's get those orders moving!",
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                            overflow: TextOverflow.visible,
+                            style: GoogleFonts.poppins(
+                              color: Color(0xFF888888),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          // Email field
+                          SizedBox(
+                            height: 52,
+                            child: TextFormField(
+                              controller: _emailController,
+                              style: GoogleFonts.poppins(color: Color(0xFF222222)),
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF222222)),
+                                hintText: 'Email',
+                                hintStyle: GoogleFonts.poppins(color: Color(0xFF222222)),
+                                filled: true,
+                                fillColor: Color(0xFFF3F3F3),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: _loginError ? Colors.red : Colors.transparent,
+                                    width: _loginError ? 2 : 0,
                                   ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: _loginError ? Colors.red : Color(0xFF181C70),
+                                    width: 2,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: _loginError ? Colors.red : Colors.transparent,
+                                    width: _loginError ? 2 : 0,
+                                  ),
                                 ),
                               ),
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your email';
+                                }
+                                return null;
+                              },
                             ),
-                            obscureText: _obscurePassword,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              // Add minimum password length validation
-                              if (value.length < 6) {
-                                return 'Password must be at least 6 characters';
-                              }
-                              return null;
-                            },
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Checkbox(
-                                    value: _rememberMe,
-                                    onChanged: (value) {
+                          const SizedBox(height: 14),
+                          // Password field
+                          SizedBox(
+                            height: 52,
+                            child: TextFormField(
+                              controller: _passwordController,
+                              style: GoogleFonts.poppins(color: Color(0xFF222222)),
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.lock_outline, color: Color(0xFF222222)),
+                                hintText: 'Password',
+                                hintStyle: GoogleFonts.poppins(color: Color(0xFF222222)),
+                                filled: true,
+                                fillColor: Color(0xFFF3F3F3),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: _loginError ? Colors.red : Colors.transparent,
+                                    width: _loginError ? 2 : 0,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: _loginError ? Colors.red : Color(0xFF181C70),
+                                    width: 2,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: _loginError ? Colors.red : Colors.transparent,
+                                    width: _loginError ? 2 : 0,
+                                  ),
+                                ),
+                                suffixIcon: Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFF222222).withOpacity(0.12),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                      color: Color(0xFF444444),
+                                    ),
+                                    onPressed: () {
                                       setState(() {
-                                        _rememberMe = value ?? false;
+                                        _obscurePassword = !_obscurePassword;
                                       });
                                     },
-                                    activeColor: Color(0xFF181C70),
                                   ),
-                                  Text(
-                                    'Remember Me',
+                                ),
+                              ),
+                              obscureText: _obscurePassword,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                // Add minimum password length validation
+                                if (value.length < 6) {
+                                  return 'Password must be at least 6 characters';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Checkbox(
+                                      value: _rememberMe,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _rememberMe = value ?? false;
+                                        });
+                                      },
+                                      activeColor: Color(0xFF181C70),
+                                    ),
+                                    Text(
+                                      'Remember Me',
+                                      softWrap: true,
+                                      overflow: TextOverflow.visible,
+                                      style: GoogleFonts.poppins(
+                                        color: ColorResources.blackColor,
+                                        fontSize: mediaQuery.size.width * 0.03,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    Get.to(() => const ForgotPasswordScreen());
+                                  },
+                                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
+                                  child: Text(
+                                    'Forgot Password?',
                                     softWrap: true,
                                     overflow: TextOverflow.visible,
                                     style: GoogleFonts.poppins(
@@ -297,63 +334,45 @@ class _LoginScreenState extends State<LoginScreen> {
                                       fontSize: mediaQuery.size.width * 0.03,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  Get.to(() => const ForgotPasswordScreen());
-                                },
-                                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
-                                child: Text(
-                                  'Forgot Password?',
-                                  softWrap: true,
-                                  overflow: TextOverflow.visible,
-                                  style: GoogleFonts.poppins(
-                                    color: ColorResources.blackColor,
-                                    fontSize: mediaQuery.size.width * 0.03,
-                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF181C70),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
-                            ),
-                            onPressed: _isLoading ? null : _signIn,
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  )
-                                : Text(
-                                    'Sign in',
-                                    softWrap: true,
-                                    overflow: TextOverflow.visible,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF181C70),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                              ),
+                              onPressed: _isLoading ? null : _signIn,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : Text(
+                                      'Sign in',
+                                      softWrap: true,
+                                      overflow: TextOverflow.visible,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
