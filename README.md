@@ -1,6 +1,6 @@
-# scanner
+# Fly Courier 
 
-A new Flutter project.
+A project of Fly International
 
 ## Getting Started
 
