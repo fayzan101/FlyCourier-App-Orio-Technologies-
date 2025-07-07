@@ -139,7 +139,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             isLoading = false;
             scannedParcel = null;
           });
-          _showMessage(success: false, error: 'Shipment No is already exist in loadsheet');
+          _showMessage(success: false, error: 'Shipment No already exists in loadsheet');
           await Future.delayed(const Duration(milliseconds: 700));
           controller?.resumeCamera();
           return;
@@ -193,7 +193,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   isLoading = false;
                   scannedParcel = null;
                 });
-                _showMessage(success: false, error: 'Shipment No is already exist in loadsheet');
+                _showMessage(success: false, error: 'Shipment No already exists in loadsheet');
               } else {
                 print('No already exist detected, showing invalid tracking number.');
                 setState(() {

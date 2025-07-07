@@ -35,6 +35,7 @@ class _PickupScreenState extends State<PickupScreen> {
   String _searchQuery = '';
   String? _selectedShipmentNo;
   final Set<String> alreadySubmittedIds = {};
+  final Set<String> _ineligibleItems = {};
 
   @override
   void initState() {
@@ -88,6 +89,12 @@ class _PickupScreenState extends State<PickupScreen> {
     final deletedIds = cardController.pickupList.where((item) => item.selected).map((item) => item.parcel.shipmentNo).toList();
     cardController.pickupList.removeWhere((item) => item.selected);
     _selectAll = false;
+    
+    // Remove deleted items from ineligible items set
+    setState(() {
+      _ineligibleItems.removeAll(deletedIds);
+    });
+    
     for (final id in deletedIds) {
       if (QrScannerScreen.scannerKey.currentState != null) {
         QrScannerScreen.scannerKey.currentState!.removeScannedId(id);
@@ -254,6 +261,240 @@ class _PickupScreenState extends State<PickupScreen> {
     );
   }
 
+  Future<void> _submitPickups() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF18136E),
+          ),
+        );
+      },
+    );
+
+    try {
+      final itemsToSubmit = cardController.pickupList.where((item) => item.selected).toList();
+      if (itemsToSubmit.isEmpty) {
+        itemsToSubmit.addAll(cardController.pickupList);
+      }
+
+      // 1. Check eligibility for all selected CNs
+      final ineligibleItems = <String>[];
+      String mainMessage = 'Please remove below cns because they already exist in another loadsheet';
+      for (final item in itemsToSubmit) {
+        final checkResponse = await ParcelService.getParcelByTrackingNumberWithResponse(item.parcel.shipmentNo);
+        // If the parcel is already in a loadsheet, the API will likely return a message or status indicating this
+        // You may need to adjust this logic based on your actual API response
+        final response = checkResponse['response'];
+        final parcel = checkResponse['parcel'];
+        if (response != null && response.data != null) {
+          final data = response.data;
+          // If status is 0 or message contains 'already', 'exist', 'not eligible', 'loadsheet', mark as ineligible
+          final status = data['status'];
+          final message = data['message']?.toString() ?? '';
+          if (status == 0 ||
+              message.toLowerCase().contains('already') ||
+              message.toLowerCase().contains('exist') ||
+              message.toLowerCase().contains('not eligible') ||
+              message.toLowerCase().contains('loadsheet')) {
+            ineligibleItems.add(item.parcel.shipmentNo);
+            if (message.isNotEmpty) mainMessage = message;
+          }
+        } else if (parcel == null) {
+          // If no parcel found, treat as ineligible
+          ineligibleItems.add(item.parcel.shipmentNo);
+        }
+      }
+
+      Navigator.of(context).pop();
+
+      // 2. If any ineligible, highlight and show error, return
+      if (ineligibleItems.isNotEmpty) {
+        setState(() {
+          _ineligibleItems.clear();
+          _ineligibleItems.addAll(ineligibleItems);
+        });
+        // Add a delay before showing the snackbar
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(mainMessage),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 6),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+            ),
+          );
+        }
+        _selectAll = false;
+        return;
+      }
+
+      // 3. If all eligible, call createLoadsheet for all
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFF18136E),
+            ),
+          );
+        },
+      );
+      for (final item in itemsToSubmit) {
+        await ParcelService.createLoadsheet(item.parcel.shipmentNo);
+      }
+      Navigator.of(context).pop();
+
+      setState(() {
+        _ineligibleItems.clear();
+      });
+      final totalCount = itemsToSubmit.length;
+      String message = totalCount == 1
+          ? 'This pickup has been created successfully'
+          : 'All pickups have been created successfully';
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 0),
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE7E6F5),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(24),
+                        child: const Icon(
+                          Icons.check,
+                          color: Color(0xFF18136E),
+                          size: 56,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Success!',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.black),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        message,
+                        style: GoogleFonts.poppins(color: Color(0xFF7B7B7B), fontSize: 15),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF18136E),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            // Remove all submitted items
+                            final submittedIds = itemsToSubmit.map((item) => item.parcel.shipmentNo).toSet();
+                            cardController.pickupList.removeWhere((item) => 
+                                submittedIds.contains(item.parcel.shipmentNo));
+                            _selectAll = false;
+                          },
+                          child: Text('Ok', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      Navigator.of(context).pop();
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 0),
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFFEBEE),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(24),
+                        child: const Icon(Icons.error, color: Colors.red, size: 56),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Error!',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.black),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Failed to create pickups. Please try again.',
+                        style: GoogleFonts.poppins(color: Color(0xFF7B7B7B), fontSize: 15),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF18136E),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text('Ok', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
   void _startContinuousScan() async {
     final scannedNumbers = cardController.pickupList.map((item) => item.parcel.shipmentNo).toSet();
     await Get.to(() => QrScannerScreen(
@@ -412,9 +653,16 @@ class _PickupScreenState extends State<PickupScreen> {
                             itemCount: _selectedShipmentNo == null ? filtered.length : filtered.where((item) => item.parcel.shipmentNo == _selectedShipmentNo).length,
                             itemBuilder: (context, index) {
                               final item = _selectedShipmentNo == null ? filtered[index] : filtered.firstWhere((i) => i.parcel.shipmentNo == _selectedShipmentNo);
+                              final isIneligible = _ineligibleItems.contains(item.parcel.shipmentNo);
                               return Card(
                                 color: item.selected ? Colors.grey[100] : Colors.white,
                                 margin: const EdgeInsets.symmetric(vertical: 4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                  side: isIneligible 
+                                    ? const BorderSide(color: Colors.red, width: 2)
+                                    : BorderSide.none,
+                                ),
                                 child: Column(
                                   children: [
                                     ListTile(
@@ -428,11 +676,25 @@ class _PickupScreenState extends State<PickupScreen> {
                                       ),
                                       title: Text(
                                         'CN No: ${item.parcel.shipmentNo}',
-                                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13),
+                                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 11),
                                       ),
                                       trailing: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
+                                          if (isIneligible)
+                                            Container(
+                                              margin: const EdgeInsets.only(right: 8),
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: const Icon(
+                                                Icons.warning,
+                                                color: Colors.white,
+                                                size: 16,
+                                              ),
+                                            ),
                                           IconButton(
                                             icon: Icon(
                                               item.isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
@@ -494,6 +756,7 @@ class _PickupScreenState extends State<PickupScreen> {
         ),
         bottomNavigationBar: Obx(() {
           if (_selectedShipmentNo == null && cardController.pickupList.isNotEmpty) {
+            final hasIneligibleItems = _ineligibleItems.isNotEmpty;
             return SafeArea(
               top: false,
               child: Padding(
@@ -502,14 +765,20 @@ class _PickupScreenState extends State<PickupScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF18136E),
+                      backgroundColor: hasIneligibleItems ? Colors.grey : const Color(0xFF18136E),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    onPressed: _showSuccessDialog,
-                    child: Text('Submit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                    onPressed: hasIneligibleItems ? null : _submitPickups,
+                    child: Text(
+                      hasIneligibleItems ? 'Remove Ineligible Items First' : 'Submit', 
+                      style: GoogleFonts.poppins(
+                        color: Colors.white, 
+                        fontWeight: FontWeight.bold
+                      )
+                    ),
                   ),
                 ),
               ),
