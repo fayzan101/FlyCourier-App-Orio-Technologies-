@@ -10,8 +10,8 @@ class UserService {
   static const String _userKey = 'user_data';
   static const String _isLoggedInKey = 'is_logged_in';
   static const String _apiKeyKey = 'api_key';
-  static const String _baseUrl = 'https://thegoexpress.com';
-  static const String _loginEndpoint = '/api/app_login';
+  static const String _baseUrl = 'https://apis.orio.digital';
+  static const String _loginEndpoint = '/api/login';
   static const String _empCodeKey = 'emp_code';
   static const String _empNameKey = 'emp_name';
   static const String _stationNameKey = 'station_name';
@@ -77,7 +77,7 @@ class UserService {
 
   // Validate login credentials with API
   static Future<bool> validateLoginWithAPI(String email, String password) async {
-    final url = 'https://thegoexpress.com/api/app_login';
+    final url = 'https://apis.orio.digital/api/login';
     try {
       // Trim email and password
       final trimmedEmail = email.trim();
@@ -137,6 +137,11 @@ class UserService {
         final empName = user['emp_name']?.toString() ?? '';
         final stationName = user['station_name']?.toString() ?? '';
         final returnedEmail = user['email']?.toString() ?? '';
+        final designation = user['designation']?.toString() ?? '';
+        String city = user['city']?.toString() ?? '';
+        if (city.isEmpty && user['city_code'] != null) {
+          city = user['city_code'].toString();
+        }
         
         print('Emp Code: "$empCode"');
         print('Emp Name: "$empName"');
@@ -167,6 +172,8 @@ class UserService {
         await prefs.setString('logged_in_name', empName);
         await prefs.setString('logged_in_password', trimmedPassword);
         await prefs.setString('arrival', user['arrival']?.toString() ?? '0');
+        await prefs.setString('designation', designation);
+        await prefs.setString('city', city);
         // Save email for future API calls
         await prefs.setString(_emailKey, trimmedEmail);
         await prefs.setString(_passwordKey, trimmedPassword);
@@ -191,6 +198,8 @@ class UserService {
       'emp_name': prefs.getString(_empNameKey),
       'station_name': prefs.getString(_stationNameKey),
       'arrival': prefs.getString('arrival'),
+      'designation': prefs.getString('designation'),
+      'city': prefs.getString('city'),
     };
   }
 

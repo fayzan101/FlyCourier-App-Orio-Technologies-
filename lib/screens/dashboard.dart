@@ -17,6 +17,7 @@ import 'dart:async';
 import '../controllers/dashboard_card_controller.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/poppins_text.dart';
+import 'report_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool showLoginSuccess;
@@ -92,6 +93,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onYes: () async {
                   Navigator.of(context).pop();
                   await UserService.logout();
+                  await cardController.clearPickupList();
                   Get.delete<DashboardCardController>();
                   Get.offAll(() => const LoginScreen());
                 },
@@ -169,13 +171,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       crossAxisSpacing: 20,
                       childAspectRatio: 1.15,
                       children: [
-                        if (cardController.showPickup.value)
-                          GestureDetector(
-                            onTap: () {
-                              Get.to(() => const PickupScreen());
-                            },
-                            child: _DashboardCard(icon: Icons.local_shipping, label: 'Pickup'),
-                          ),
+                        GestureDetector(
+                          onTap: () {
+                            Get.to(() => const PickupScreen());
+                          },
+                          child: _DashboardCard(icon: Icons.local_shipping, label: 'Loadsheet'),
+                        ),
                         if (cardController.showArrival.value)
                           GestureDetector(
                             onTap: () {
@@ -193,8 +194,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _DashboardCard(icon: Icons.delivery_dining, label: 'Delivery'),
                         if (cardController.showTracking.value)
                           _DashboardCard(icon: Icons.track_changes, label: 'Tracking'),
-                        if (cardController.showReport.value)
-                          _DashboardCard(icon: Icons.bar_chart, label: 'Report'),
+                        GestureDetector(
+                          onTap: () {
+                            Get.to(() => const ReportScreen());
+                          },
+                          child: _DashboardCard(icon: Icons.bar_chart, label: 'Report'),
+                        ),
                       ],
                     )),
                   ),

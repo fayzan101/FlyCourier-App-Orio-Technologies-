@@ -178,6 +178,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               });
               _showMessage(success: true);
               widget.onScanSuccess(code);
+              // Add delay after showing Parcel Found!
+              await Future.delayed(const Duration(seconds: 2));
             } else {
               // Check for 'already exist' in API response body (robust)
               final bodyMsg = (response != null && response.data != null)

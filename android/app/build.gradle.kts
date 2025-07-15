@@ -18,7 +18,7 @@ android {
     ndkVersion = "27.1.12297006"
 
     defaultConfig {
-        applicationId = "com.example.scanner"
+        applicationId = "com.example.scanner1"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

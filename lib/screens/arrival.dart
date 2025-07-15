@@ -19,7 +19,8 @@ class ShipmentItem {
   final ParcelModel parcel;
   bool selected;
   bool isExpanded;
-  ShipmentItem({required this.parcel, this.selected = false, this.isExpanded = false});
+  bool alreadySubmitted; // New flag
+  ShipmentItem({required this.parcel, this.selected = false, this.isExpanded = false, this.alreadySubmitted = false});
 }
 
 class ArrivalScreen extends StatefulWidget {
@@ -140,7 +141,16 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
   }
 
   void _showDeleteDialog() {
-    final selectedCount = _shipmentList.where((item) => item.selected).length;
+    final selectedItems = _shipmentList.where((item) => item.selected).toList();
+    final selectedCount = selectedItems.length;
+    String message;
+    if (selectedCount == 1 && selectedItems[0].alreadySubmitted) {
+      message = 'You want to delete this shipment';
+    } else if (selectedCount == 1) {
+      message = 'You want to delete this shipment';
+    } else {
+      message = 'You want to delete all shipments';
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -171,9 +181,7 @@ class _ArrivalScreenState extends State<ArrivalScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                selectedCount == 1
-                    ? 'You want to delete this shipment'
-                    : 'You want to delete all shipments',
+                message,
                 style: GoogleFonts.poppins(color: Color(0xFF7B7B7B), fontSize: 15),
                 textAlign: TextAlign.center,
               ),
