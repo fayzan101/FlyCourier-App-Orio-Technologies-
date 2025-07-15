@@ -128,9 +128,9 @@ class _PickupScreenState extends State<PickupScreen> {
     if (selectedCount == 1 && selectedItems[0].alreadySubmitted) {
       message = 'You want to delete this shipment';
     } else if (selectedCount == 1) {
-      message = 'You want to delete this loadsheet';
+      message = 'You want to delete this shipment';
     } else {
-      message = 'You want to delete all loadsheets';
+      message = 'You want to delete all shipments';
     }
     showModalBottomSheet(
       context: context,

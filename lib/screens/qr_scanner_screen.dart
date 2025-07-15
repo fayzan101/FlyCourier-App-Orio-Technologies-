@@ -140,7 +140,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             scannedParcel = null;
           });
           _showMessage(success: false, error: 'Shipment No already exists in loadsheet');
-          await Future.delayed(const Duration(milliseconds: 700));
+          await Future.delayed(const Duration(seconds: 2));
           controller?.resumeCamera();
           return;
         }
@@ -153,7 +153,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             scannedParcel = null;
           });
           _showMessage(success: false, error: 'Already scanned');
-          await Future.delayed(const Duration(milliseconds: 700));
+          await Future.delayed(const Duration(seconds: 2));
           controller?.resumeCamera();
           return;
         }
@@ -213,7 +213,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               isLoading = false;
             });
           }
-          await Future.delayed(const Duration(milliseconds: 700));
+          await Future.delayed(const Duration(seconds: 2));
           controller?.resumeCamera();
         }
       }
@@ -233,7 +233,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       errorMessage = error;
     });
     _messageTimer?.cancel();
-    _messageTimer = Timer(const Duration(milliseconds: 1500), () {
+    _messageTimer = Timer(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
           showSuccess = false;

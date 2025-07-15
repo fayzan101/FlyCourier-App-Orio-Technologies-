@@ -232,8 +232,8 @@ class _ReportScreenState extends State<ReportScreen> {
                                     sheet['sheet_no'] != null ? 'Sheet No: ${sheet['sheet_no']}' : 'Sheet',
                                     style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                                   ),
-                                  subtitle: sheet['rider_name'] != null
-                                      ? Text('Rider: ${sheet['rider_name']}', style: GoogleFonts.poppins())
+                                  subtitle: sheet['sheet_date'] != null
+                                      ? Text('Created at: 	${sheet['sheet_date']}', style: GoogleFonts.poppins())
                                       : null,
                                   children: [
                                     if (sheet['detail'] is List)
