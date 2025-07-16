@@ -113,7 +113,7 @@ class SidebarScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     ListTile(
                       leading: const Icon(Icons.lock_outline, color: darkBlue),
-                      title: Text('Reset Password', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                      title: Text('', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
                       onTap: onResetPassword,
                       contentPadding: EdgeInsets.zero,
                     ),

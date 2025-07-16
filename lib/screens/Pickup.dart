@@ -652,7 +652,7 @@ class _PickupScreenState extends State<PickupScreen> {
                           });
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search by tracking number or recipient name',
+                          hintText: 'Search',
                           filled: true,
                           fillColor: const Color(0xFFF3F3F3),
                           border: OutlineInputBorder(

@@ -326,7 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                   style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size(0, 0)),
                                   child: Text(
-                                    'Forgot Password?',
+                                    '',
                                     softWrap: true,
                                     overflow: TextOverflow.visible,
                                     style: GoogleFonts.poppins(
