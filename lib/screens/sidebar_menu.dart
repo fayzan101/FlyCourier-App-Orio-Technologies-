@@ -21,6 +21,16 @@ class SidebarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const darkBlue = Color(0xFF18136E);
+    final width = MediaQuery.of(context).size.width;
+    final hour = DateTime.now().hour;
+    String greeting;
+    if (hour < 12) {
+      greeting = 'Good Morning';
+    } else if (hour < 17) {
+      greeting = 'Good Afternoon';
+    } else {
+      greeting = 'Good Evening';
+    }
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -46,7 +56,7 @@ class SidebarScreen extends StatelessWidget {
         body: SafeArea(
           bottom: true,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            padding: EdgeInsets.fromLTRB(width * 0.04, width * 0.02, width * 0.04, width * 0.04),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -63,10 +73,10 @@ class SidebarScreen extends StatelessWidget {
                             color: const Color(0xFFF3F3F3),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(width * 0.03),
                           child: const Icon(Icons.person, color: darkBlue, size: 32),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: width * 0.03),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -74,53 +84,46 @@ class SidebarScreen extends StatelessWidget {
                               ? Row(
                                   children: [
                                     SizedBox(
-                                      width: 18,
-                                      height: 18,
+                                      width: width * 0.045,
+                                      height: width * 0.045,
                                       child: CircularProgressIndicator(strokeWidth: 2),
                                     ),
-                                    SizedBox(width: 8),
-                                    Text('Loading...', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18, color: darkBlue)),
+                                    SizedBox(width: width * 0.02),
+                                    Text('Loading...', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: width * 0.045, color: darkBlue)),
                                   ],
                                 )
                               : Text(
-                                  'Hi, $userName',
+                                  'Hi, ' + userName.split(' ').map((part) => part.isNotEmpty ? part[0].toUpperCase() + part.substring(1).toLowerCase() : '').join(' '),
                                   style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                    fontSize: width * 0.045,
                                     color: darkBlue,
                                   ),
                                 ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: width * 0.005),
                             Text(
-                              'Good Morning',
+                              greeting,
                               style: GoogleFonts.poppins(
                                 color: Colors.black54,
-                                fontSize: 14,
+                                fontSize: width * 0.035,
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: width * 0.02),
                     const Divider(),
                     ListTile(
                       leading: const Icon(Icons.person, color: darkBlue),
-                      title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                      title: Text('Profile', style: GoogleFonts.poppins(color: darkBlue, fontSize: width * 0.04)),
                       onTap: onProfile,
                       contentPadding: EdgeInsets.zero,
                     ),
-                    const SizedBox(height: 12),
-                    ListTile(
-                      leading: const Icon(Icons.lock_outline, color: darkBlue),
-                      title: Text('', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
-                      onTap: onResetPassword,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: width * 0.00005),
                     ListTile(
                       leading: const Icon(Icons.logout, color: darkBlue),
-                      title: Text('Logout', style: GoogleFonts.poppins(color: darkBlue, fontSize: 16)),
+                      title: Text('Logout', style: GoogleFonts.poppins(color: darkBlue, fontSize: width * 0.04)),
                       onTap: onLogout,
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -135,7 +138,7 @@ class SidebarScreen extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'App Version - V2.00',
-                      style: GoogleFonts.poppins(color: Colors.black54, fontSize: 13),
+                      style: GoogleFonts.poppins(color: Colors.black54, fontSize: width * 0.033),
                     ),
                   ),
                 ),

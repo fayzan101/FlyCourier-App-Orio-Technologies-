@@ -18,6 +18,7 @@ import '../controllers/dashboard_card_controller.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/poppins_text.dart';
 import 'report_screen.dart';
+import '../widgets/fly_courier_branding.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool showLoginSuccess;
@@ -123,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           surfaceTintColor: Colors.white,
           scrolledUnderElevation: 1,
           automaticallyImplyLeading: false,
-          title: const SafeArea(child: _FlyCourierBranding()),
+          title: const SafeArea(child: FlyCourierBranding()),
           actions: [
             IconButton(
               icon: const Icon(Icons.menu, color: Colors.black, size: 28),
@@ -139,13 +140,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 8),
+                    padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.02, top: MediaQuery.of(context).size.width * 0.02),
                     child: Text(
                       'Dashboard',
                       style: GoogleFonts.poppins(
                         color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 22,
+                        fontSize: MediaQuery.of(context).size.width * 0.055, // Responsive font size
                       ),
                     ),
                   ),
@@ -289,73 +290,6 @@ class _LogoutDialog extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _FlyCourierBranding extends StatelessWidget {
-  const _FlyCourierBranding();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Main title - centered with respect to subtitle
-        Padding(
-          padding: const EdgeInsets.only(left: 10.0),
-          child: Text(
-  'FLY Courier',
-  style: GoogleFonts.montserrat(
-    color: const Color(0xFF18136E),
-    fontWeight: FontWeight.w900,
-    fontSize: 16,
-    letterSpacing: 1.0,
-    height: 1.0,
-  ),
-),
-),
-        // Subtitle positioned right below
-        Padding(
-          padding: const EdgeInsets.only(left: 5.0),
-          child: Text(
-            'Success Driven',
-            style: TextStyle(
-              color: Color(0xFF18136E),
-              fontStyle: FontStyle.italic,
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-              fontFamily: 'Arial',
-              height: 1.0,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        // Two blue lines positioned below the text
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 5.0),
-              child: Container(
-                height: 2,
-                width: 120,
-                color: Colors.lightBlue,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Padding(
-              padding: const EdgeInsets.only(left: 20),
-              child: Container(
-                height: 2,
-                width: 80,
-                color: Colors.lightBlue,
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

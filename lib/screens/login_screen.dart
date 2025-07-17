@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Utils/Colors/color_resources.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../widgets/fly_courier_branding.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -138,7 +139,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const SizedBox(height: 48),
+                          SizedBox(height: 32),
+                          Center(child: FlyCourierBranding()),
+                          SizedBox(height: 32),
                           Text(
                             'Sign In',
                             textAlign: TextAlign.center,
@@ -164,9 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 30),
                           // Email field
-                          SizedBox(
-                            height: 52,
-                            child: TextFormField(
+                          TextFormField(
                               controller: _emailController,
                               style: GoogleFonts.poppins(color: Color(0xFF222222)),
                               decoration: InputDecoration(
@@ -175,12 +176,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintStyle: GoogleFonts.poppins(color: Color(0xFF222222)),
                                 filled: true,
                                 fillColor: Color(0xFFF3F3F3),
-                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: _loginError ? Colors.red : Colors.transparent,
-                                    width: _loginError ? 2 : 0,
+                                    color: Colors.transparent,
+                                    width: 0,
                                   ),
                                 ),
                                 errorBorder: OutlineInputBorder(
@@ -201,8 +202,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: _loginError ? Colors.red : Colors.transparent,
-                                    width: _loginError ? 2 : 0,
+                                    color: Colors.transparent,
+                                    width: 0,
                                   ),
                                 ),
                               ),
@@ -214,12 +215,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return null;
                               },
                             ),
-                          ),
                           const SizedBox(height: 14),
                           // Password field
-                          SizedBox(
-                            height: 52,
-                            child: TextFormField(
+                          TextFormField(
                               controller: _passwordController,
                               style: GoogleFonts.poppins(color: Color(0xFF222222)),
                               decoration: InputDecoration(
@@ -228,12 +226,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintStyle: GoogleFonts.poppins(color: Color(0xFF222222)),
                                 filled: true,
                                 fillColor: Color(0xFFF3F3F3),
-                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: _loginError ? Colors.red : Colors.transparent,
-                                    width: _loginError ? 2 : 0,
+                                    color: Colors.transparent,
+                                    width: 0,
                                   ),
                                 ),
                                 errorBorder: OutlineInputBorder(
@@ -254,27 +252,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: _loginError ? Colors.red : Colors.transparent,
-                                    width: _loginError ? 2 : 0,
+                                    color: Colors.transparent,
+                                    width: 0,
                                   ),
                                 ),
-                                suffixIcon: Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF222222).withOpacity(0.12),
-                                    shape: BoxShape.circle,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                    color: Color(0xFF444444),
                                   ),
-                                  child: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                      color: Color(0xFF444444),
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
                                 ),
                               ),
                               obscureText: _obscurePassword,
@@ -289,7 +280,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return null;
                               },
                             ),
-                          ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -343,7 +333,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 48,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF181C70),
+                                backgroundColor: const Color(0xFF181C70),
+                                disabledBackgroundColor: const Color(0xFF181C70),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -356,6 +347,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
+                                        color: Colors.white,
                                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                       ),
                                     )
@@ -384,3 +376,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

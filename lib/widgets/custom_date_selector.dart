@@ -29,7 +29,7 @@ class _CustomDateSelectorState extends State<CustomDateSelector> {
   final DateFormat _dateFormat = DateFormat('dd-MM-yyyy');
 
   // Splash screen color theme
-  static const Color splashColor = Color(0xFF007AFF);
+  static const Color splashColor = Color(0xFF18136E); // Splash screen color
 
   @override
   void initState() {
@@ -100,7 +100,7 @@ class _CustomDateSelectorState extends State<CustomDateSelector> {
                   style: TextStyle(
                     fontSize: 18, 
                     fontWeight: FontWeight.bold,
-                    color: splashColor,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -119,12 +119,28 @@ class _CustomDateSelectorState extends State<CustomDateSelector> {
                       lastDate: DateTime.now(),
                       builder: (context, child) {
                         return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: ColorScheme.dark(
                               primary: splashColor,
                               onPrimary: Colors.white,
-                              surface: Colors.white,
-                              onSurface: Colors.black,
+                              surface: Colors.black,
+                              onSurface: Colors.white,
+                            ),
+                            dialogBackgroundColor: Colors.black,
+                            textTheme: ThemeData.dark().textTheme.apply(
+                              bodyColor: Colors.white,
+                              displayColor: Colors.white,
+                            ),
+                            inputDecorationTheme: const InputDecorationTheme(
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white, width: 2),
+                              ),
                             ),
                           ),
                           child: child!,
@@ -159,12 +175,28 @@ class _CustomDateSelectorState extends State<CustomDateSelector> {
                       lastDate: DateTime.now(),
                       builder: (context, child) {
                         return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: ColorScheme.dark(
                               primary: splashColor,
                               onPrimary: Colors.white,
-                              surface: Colors.white,
-                              onSurface: Colors.black,
+                              surface: Colors.black,
+                              onSurface: Colors.white,
+                            ),
+                            dialogBackgroundColor: Colors.black,
+                            textTheme: ThemeData.dark().textTheme.apply(
+                              bodyColor: Colors.white,
+                              displayColor: Colors.white,
+                            ),
+                            inputDecorationTheme: const InputDecorationTheme(
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white, width: 2),
+                              ),
                             ),
                           ),
                           child: child!,
@@ -200,6 +232,7 @@ class _CustomDateSelectorState extends State<CustomDateSelector> {
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.black), // Black border
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
@@ -208,6 +241,7 @@ class _CustomDateSelectorState extends State<CustomDateSelector> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: Colors.white, // White text for save button
                       ),
                     ),
                   ),
@@ -231,26 +265,27 @@ class _CustomDateSelectorState extends State<CustomDateSelector> {
       readOnly: false,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: splashColor),
+        labelStyle: const TextStyle(color: Colors.black),
         suffixIcon: IconButton(
-          icon: Icon(Icons.calendar_today_rounded, size: 20, color: splashColor),
+          icon: Icon(Icons.calendar_today_rounded, size: 20, color: Colors.black),
           onPressed: onTap,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: splashColor.withOpacity(0.3)),
+          borderSide: const BorderSide(color: Colors.black),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: splashColor, width: 2),
+          borderSide: const BorderSide(color: Colors.black, width: 2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: splashColor.withOpacity(0.3)),
+          borderSide: const BorderSide(color: Colors.black),
         ),
         filled: true,
         fillColor: widget.fieldFillColor,
       ),
+      style: const TextStyle(color: Colors.black),
       keyboardType: TextInputType.datetime,
       validator: (value) {
         if (value == null || value.isEmpty) {
