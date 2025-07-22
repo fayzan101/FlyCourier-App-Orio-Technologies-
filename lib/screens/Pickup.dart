@@ -12,6 +12,7 @@ import 'profile_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'package:get/get.dart';
 import '../controllers/dashboard_card_controller.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class PickupItem {
   final ParcelModel parcel;
@@ -557,6 +558,9 @@ class _PickupScreenState extends State<PickupScreen> {
       key: QrScannerScreen.scannerKey,
       validIds: scannedNumbers,
       onScanSuccess: (trackingNumber) async {
+        // Play beep sound on successful scan
+        final player = AudioPlayer();
+        await player.play(AssetSource('audio/beep.mp3'));
         if (!cardController.pickupList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
           final result = await ParcelService.getParcelByTrackingNumberWithResponse(trackingNumber);
           final parcel = result['parcel'];
@@ -637,6 +641,21 @@ class _PickupScreenState extends State<PickupScreen> {
                       ],
                     ),
                   ),
+                ),
+                // Total pickups count below search bar, right aligned
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: Container()),
+                    Obx(() => Text(
+                      'Total Pickups: ${cardController.pickupList.length}',
+                      style: GoogleFonts.poppins(
+                        color: Color(0xFF18136E),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    )),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 // Search

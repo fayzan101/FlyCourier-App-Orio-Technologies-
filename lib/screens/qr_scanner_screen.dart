@@ -11,6 +11,7 @@ import 'profile_screen.dart';
 import 'forgot_password.dart';
 import 'login_screen.dart';
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 
 class QrScannerScreen extends StatefulWidget {
   final Set<String> validIds;
@@ -37,6 +38,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   bool _isLoadingUserName = true;
   late Set<String> scannedIds;
   Timer? _messageTimer;
+  bool _scanCooldown = false;
 
   @override
   void initState() {
@@ -130,7 +132,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       String normalized(String? s) => (s ?? '').trim().toLowerCase();
       final code = scanData.code;
       final normalizedCode = normalized(code);
-      if (!isLoading) {
+      if (!isLoading && !_scanCooldown) {
         // Check if code is already submitted
         if (widget.alreadySubmittedIds.contains(normalizedCode)) {
           setState(() {
@@ -177,9 +179,14 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 scannedIds.add(code);
               });
               _showMessage(success: true);
+              // Play beep sound on successful scan
+              final player = AudioPlayer();
+              await player.play(AssetSource('audio/beep.mp3'));
               widget.onScanSuccess(code);
-              // Add delay after showing Parcel Found!
-              await Future.delayed(const Duration(seconds: 2));
+              // Add cooldown after successful scan to prevent immediate duplicate scan
+              _scanCooldown = true;
+              await Future.delayed(const Duration(seconds: 3));
+              _scanCooldown = false;
             } else {
               // Check for 'already exist' in API response body (robust)
               final bodyMsg = (response != null && response.data != null)
@@ -233,7 +240,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       errorMessage = error;
     });
     _messageTimer?.cancel();
-    _messageTimer = Timer(const Duration(seconds: 2), () {
+    _messageTimer = Timer(Duration(seconds: success ? 3 : 2), () {
       if (mounted) {
         setState(() {
           showSuccess = false;
