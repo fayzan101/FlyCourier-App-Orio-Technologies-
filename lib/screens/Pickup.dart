@@ -597,6 +597,9 @@ class _PickupScreenState extends State<PickupScreen> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
+          shadowColor: Colors.white,
+          foregroundColor: Colors.black,
+          surfaceTintColor: Colors.white,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -643,20 +646,7 @@ class _PickupScreenState extends State<PickupScreen> {
                   ),
                 ),
                 // Total pickups count below search bar, right aligned
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: Container()),
-                    Obx(() => Text(
-                      'Total Pickups: ${cardController.pickupList.length}',
-                      style: GoogleFonts.poppins(
-                        color: Color(0xFF18136E),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    )),
-                  ],
-                ),
+                
                 const SizedBox(height: 16),
                 // Search
                 Row(
@@ -694,6 +684,24 @@ class _PickupScreenState extends State<PickupScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+Row(
+  children: [
+    Expanded(child: Container()),
+    Padding(
+      padding: const EdgeInsets.only(right: 20), // adjust value as needed
+      child: Obx(() => Text(
+        'Total Pickups: ${cardController.pickupList.length}',
+        style: GoogleFonts.poppins(
+          color: Color(0xFF18136E),
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+      )),
+    ),
+  ],
+),
+
                 Obx(() {
                   if (cardController.pickupList.isEmpty) return SizedBox.shrink();
                   final filtered = _filteredPickupList;

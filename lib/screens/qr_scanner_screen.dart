@@ -142,7 +142,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             scannedParcel = null;
           });
           _showMessage(success: false, error: 'Shipment No already exists in loadsheet');
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 3));
           controller?.resumeCamera();
           return;
         }
@@ -155,7 +155,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             scannedParcel = null;
           });
           _showMessage(success: false, error: 'Already scanned');
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 4));
           controller?.resumeCamera();
           return;
         }
@@ -183,10 +183,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               final player = AudioPlayer();
               await player.play(AssetSource('audio/beep.mp3'));
               widget.onScanSuccess(code);
-              // Add cooldown after successful scan to prevent immediate duplicate scan
-              _scanCooldown = true;
-              await Future.delayed(const Duration(seconds: 3));
-              _scanCooldown = false;
+              // Pause camera for 5 seconds to prevent duplicate scans and message interruption
+              await controller?.pauseCamera();
+              await Future.delayed(const Duration(seconds: 4));
+              await controller?.resumeCamera();
             } else {
               // Check for 'already exist' in API response body (robust)
               final bodyMsg = (response != null && response.data != null)
@@ -220,7 +220,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               isLoading = false;
             });
           }
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 4));
           controller?.resumeCamera();
         }
       }
@@ -240,7 +240,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       errorMessage = error;
     });
     _messageTimer?.cancel();
-    _messageTimer = Timer(Duration(seconds: success ? 3 : 2), () {
+    _messageTimer = Timer(Duration(seconds: success ? 4: 3), () {
       if (mounted) {
         setState(() {
           showSuccess = false;
