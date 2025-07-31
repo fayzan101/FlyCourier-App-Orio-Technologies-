@@ -349,8 +349,6 @@ class _PickupScreenState extends State<PickupScreen> {
           _selectAll = false;
           cardController.pickupList.refresh();
         });
-        // Add a delay before showing the snackbar
-        await Future.delayed(const Duration(seconds: 1));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -558,9 +556,9 @@ class _PickupScreenState extends State<PickupScreen> {
       key: QrScannerScreen.scannerKey,
       validIds: scannedNumbers,
       onScanSuccess: (trackingNumber) async {
-        // Play beep sound on successful scan
+        // Play beep sound on successful scan (non-blocking)
         final player = AudioPlayer();
-        await player.play(AssetSource('audio/beep.mp3'));
+        player.play(AssetSource('audio/beep.mp3'));
         if (!cardController.pickupList.any((item) => item.parcel.shipmentNo == trackingNumber)) {
           final result = await ParcelService.getParcelByTrackingNumberWithResponse(trackingNumber);
           final parcel = result['parcel'];
@@ -691,7 +689,7 @@ Row(
     Padding(
       padding: const EdgeInsets.only(right: 20), // adjust value as needed
       child: Obx(() => Text(
-        'Total Pickups: ${cardController.pickupList.length}',
+        'Total Loadsheets: ${cardController.pickupList.length}',
         style: GoogleFonts.poppins(
           color: Color(0xFF18136E),
           fontWeight: FontWeight.w600,

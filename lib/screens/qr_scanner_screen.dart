@@ -39,6 +39,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   late Set<String> scannedIds;
   Timer? _messageTimer;
   bool _scanCooldown = false;
+  DateTime? _lastScanTime;
 
   @override
   void initState() {
@@ -132,7 +133,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       String normalized(String? s) => (s ?? '').trim().toLowerCase();
       final code = scanData.code;
       final normalizedCode = normalized(code);
-      if (!isLoading && !_scanCooldown) {
+      // Check if enough time has passed since last scan (prevent duplicate scans)
+      final now = DateTime.now();
+      if (!isLoading && (_lastScanTime == null || now.difference(_lastScanTime!).inMilliseconds > 300)) {
+        _lastScanTime = now;
         // Check if code is already submitted
         if (widget.alreadySubmittedIds.contains(normalizedCode)) {
           setState(() {
@@ -142,8 +146,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             scannedParcel = null;
           });
           _showMessage(success: false, error: 'Shipment No already exists in loadsheet');
-          await Future.delayed(const Duration(seconds: 3));
-          controller?.resumeCamera();
           return;
         }
         // If already scanned, show message and return immediately
@@ -155,8 +157,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             scannedParcel = null;
           });
           _showMessage(success: false, error: 'Already scanned');
-          await Future.delayed(const Duration(seconds: 4));
-          controller?.resumeCamera();
           return;
         }
         setState(() {
@@ -179,13 +179,13 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 scannedIds.add(code);
               });
               _showMessage(success: true);
-              // Play beep sound on successful scan
+              // Play beep sound on successful scan (non-blocking)
               final player = AudioPlayer();
-              await player.play(AssetSource('audio/beep.mp3'));
+              player.play(AssetSource('audio/beep.mp3'));
               widget.onScanSuccess(code);
-              // Pause camera for 5 seconds to prevent duplicate scans and message interruption
+              // Very brief pause to prevent duplicate scans
               await controller?.pauseCamera();
-              await Future.delayed(const Duration(seconds: 4));
+              await Future.delayed(const Duration(milliseconds: 200));
               await controller?.resumeCamera();
             } else {
               // Check for 'already exist' in API response body (robust)
@@ -220,7 +220,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               isLoading = false;
             });
           }
-          await Future.delayed(const Duration(seconds: 4));
+          // Very brief pause before resuming camera
+          await Future.delayed(const Duration(milliseconds: 200));
           controller?.resumeCamera();
         }
       }
@@ -240,7 +241,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       errorMessage = error;
     });
     _messageTimer?.cancel();
-    _messageTimer = Timer(Duration(seconds: success ? 4: 3), () {
+    _messageTimer = Timer(Duration(seconds: success ? 1: 1), () {
       if (mounted) {
         setState(() {
           showSuccess = false;
