@@ -25,7 +25,7 @@ class QrScannerScreen extends StatefulWidget {
   State<QrScannerScreen> createState() => _QrScannerScreenState();
 }
 
-class _QrScannerScreenState extends State<QrScannerScreen> {
+class _QrScannerScreenState extends State<QrScannerScreen> with TickerProviderStateMixin {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   String? scannedId;
@@ -40,6 +40,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   Timer? _messageTimer;
   bool _scanCooldown = false;
   DateTime? _lastScanTime;
+  late AnimationController _animationController;
 
   @override
   void initState() {
@@ -48,6 +49,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       SystemUiMode.manual,
       overlays: [SystemUiOverlay.top],
     );
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat();
     _loadUserName();
     scannedIds = Set<String>.from(widget.validIds);
   }
@@ -113,6 +118,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   @override
   void dispose() {
     _messageTimer?.cancel();
+    _animationController.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     controller?.dispose();
     super.dispose();
@@ -135,7 +141,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       final normalizedCode = normalized(code);
       // Check if enough time has passed since last scan (prevent duplicate scans)
       final now = DateTime.now();
-      if (!isLoading && (_lastScanTime == null || now.difference(_lastScanTime!).inMilliseconds > 300)) {
+      if (!isLoading && (_lastScanTime == null || now.difference(_lastScanTime!).inMilliseconds > 200)) {
         _lastScanTime = now;
         // Check if code is already submitted
         if (widget.alreadySubmittedIds.contains(normalizedCode)) {
@@ -241,7 +247,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       errorMessage = error;
     });
     _messageTimer?.cancel();
-    _messageTimer = Timer(Duration(seconds: success ? 1: 1), () {
+    _messageTimer = Timer(Duration(milliseconds: success ? 200:200), () {
       if (mounted) {
         setState(() {
           showSuccess = false;
@@ -303,12 +309,18 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 ),
                 // Custom dimmed overlay
                 IgnorePointer(
-                  child: CustomPaint(
-                    size: Size.infinite,
-                    painter: _ScannerOverlayPainter(
-                      cutOutSize: MediaQuery.of(context).size.width * 0.7,
-                      borderRadius: 12,
-                    ),
+                  child: AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      return CustomPaint(
+                        size: Size.infinite,
+                        painter: _ScannerOverlayPainter(
+                          cutOutSize: MediaQuery.of(context).size.width * 0.7,
+                          borderRadius: 12,
+                          animationValue: _animationController.value,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 if (showSuccess)
@@ -437,8 +449,13 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 class _ScannerOverlayPainter extends CustomPainter {
   final double cutOutSize;
   final double borderRadius;
+  final double animationValue;
 
-  _ScannerOverlayPainter({required this.cutOutSize, required this.borderRadius});
+  _ScannerOverlayPainter({
+    required this.cutOutSize, 
+    required this.borderRadius,
+    this.animationValue = 0.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -461,6 +478,90 @@ class _ScannerOverlayPainter extends CustomPainter {
     canvas.drawPath(
       Path.combine(PathOperation.difference, overlayPath, cutOutPath),
       paint,
+    );
+
+    // Draw green border around the scanning area
+    final borderPaint = Paint()
+      ..color = Colors.green
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(cutOutRect, Radius.circular(borderRadius)),
+      borderPaint,
+    );
+
+    // Draw green corner indicators
+    final cornerPaint = Paint()
+      ..color = Colors.green
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0;
+
+    final cornerLength = 30.0;
+    final cornerRadius = 8.0;
+
+    // Top-left corner
+    canvas.drawLine(
+      Offset(cutOutRect.left + cornerRadius, cutOutRect.top),
+      Offset(cutOutRect.left + cornerLength, cutOutRect.top),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      Offset(cutOutRect.left, cutOutRect.top + cornerRadius),
+      Offset(cutOutRect.left, cutOutRect.top + cornerLength),
+      cornerPaint,
+    );
+
+    // Top-right corner
+    canvas.drawLine(
+      Offset(cutOutRect.right - cornerLength, cutOutRect.top),
+      Offset(cutOutRect.right - cornerRadius, cutOutRect.top),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      Offset(cutOutRect.right, cutOutRect.top + cornerRadius),
+      Offset(cutOutRect.right, cutOutRect.top + cornerLength),
+      cornerPaint,
+    );
+
+    // Bottom-left corner
+    canvas.drawLine(
+      Offset(cutOutRect.left + cornerRadius, cutOutRect.bottom),
+      Offset(cutOutRect.left + cornerLength, cutOutRect.bottom),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      Offset(cutOutRect.left, cutOutRect.bottom - cornerLength),
+      Offset(cutOutRect.left, cutOutRect.bottom - cornerRadius),
+      cornerPaint,
+    );
+
+    // Bottom-right corner
+    canvas.drawLine(
+      Offset(cutOutRect.right - cornerLength, cutOutRect.bottom),
+      Offset(cutOutRect.right - cornerRadius, cutOutRect.bottom),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      Offset(cutOutRect.right, cutOutRect.bottom - cornerLength),
+      Offset(cutOutRect.right, cutOutRect.bottom - cornerRadius),
+      cornerPaint,
+    );
+
+    // Draw animated green scanning line
+    final scanningLinePaint = Paint()
+      ..color = Colors.green.withOpacity(0.8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    // Calculate animation position based on animation value (bottom to top)
+    final lineY = cutOutRect.bottom - (cutOutRect.height * animationValue);
+
+    // Draw horizontal scanning line moving from bottom to top
+    canvas.drawLine(
+      Offset(cutOutRect.left + 10, lineY),
+      Offset(cutOutRect.right - 10, lineY),
+      scanningLinePaint,
     );
   }
 
