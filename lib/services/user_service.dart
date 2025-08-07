@@ -10,8 +10,8 @@ class UserService {
   static const String _userKey = 'user_data';
   static const String _isLoggedInKey = 'is_logged_in';
   static const String _apiKeyKey = 'api_key';
-  static const String _baseUrl = 'https://apis.orio.digital';
-  static const String _loginEndpoint = '/api/login';
+  static const String _baseUrl = APIConfig.baseUrl;
+  static const String _loginEndpoint = APIConfig.login;
   static const String _empCodeKey = 'emp_code';
   static const String _empNameKey = 'emp_name';
   static const String _stationNameKey = 'station_name';
@@ -77,7 +77,7 @@ class UserService {
 
   // Validate login credentials with API
   static Future<bool> validateLoginWithAPI(String email, String password) async {
-    final url = 'https://apis.orio.digital/api/login';
+    final url = _baseUrl + _loginEndpoint;
     try {
       // Trim email and password
       final trimmedEmail = email.trim();

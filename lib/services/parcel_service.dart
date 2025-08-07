@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import '../models/parcel_model.dart';
 import '../services/user_service.dart';
+import '../config/api_config.dart';
 
 class ParcelService {
   static Future<Map<String, dynamic>> getParcelByTrackingNumberWithResponse(String trackingNumber) async {
     final dio = Dio();
-    const url = 'https://apis.orio.digital/api/loadsheet_by_cn';
+    final url = APIConfig.baseUrl + APIConfig.parcelLookup;
     
     try {
       // Get authorization header from saved credentials
@@ -61,7 +62,7 @@ class ParcelService {
 
   static Future<Response?> createLoadsheet(String shipmentNos) async {
     final dio = Dio();
-    const url = 'https://apis.orio.digital/api/create_loadsheet';
+    final url = APIConfig.baseUrl + APIConfig.createLoadsheet;
     try {
       // Get authorization header from saved credentials
       final authHeader = await UserService.getAuthorizationHeader();
@@ -90,7 +91,7 @@ class ParcelService {
 
   static Future<dynamic> getSheetwiseReport({required String startDate, required String endDate, required String type}) async {
     final dioInstance = Dio();
-    const url = 'https://apis.orio.digital/api/sheetwise_report';
+    final url = APIConfig.baseUrl + APIConfig.sheetwiseReport;
     try {
       // Get authorization header from saved credentials
       final authHeader = await UserService.getAuthorizationHeader();
